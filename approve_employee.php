@@ -1,18 +1,31 @@
 <?php
 session_start();
-include 'includes/db.php';
-include 'includes/header.php';
+require 'includes/db.php';
+require 'includes/header.php';
+require 'includes/mail.php';
 
-// Redirect if not admin
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     header("Location: index.php");
     exit;
 }
 
-// Approve employee
 if (isset($_GET['approve'])) {
     $emp_id = $_GET['approve'];
     $conn->query("UPDATE Employees SET status = 'active' WHERE employee_id = $emp_id");
+
+    $subject = "Welcome to the Company!";
+    $body = "
+        <h4>Hi {$emp['name']},</h4>
+        <p>You have been approved as an employee at our company.</p>
+        <p><strong>Email:</strong> {$emp['email']}<br>
+           <strong>Position:</strong> {$emp['position']}<br>
+           <strong>Hire Date:</strong> {$emp['hire_date']}</p>
+        <p>Please log in to the portal using your registered email and password. An OTP will be sent to your email for login verification.</p>
+        <br>
+        <p>Regards,<br>Admin</p>
+    ";
+    sendMail($_SESSION['email'], $subject, $body);
+
 
     $new_employee_id = $emp_id;
 

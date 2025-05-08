@@ -1,10 +1,8 @@
 <?php
 session_start();
-include 'includes/db.php';
-require __DIR__ . '/vendor/autoload.php'; // This ensures PHPMailer classes are loaded
+require 'includes/db.php';
+require 'includes/mail.php';
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
 
 if (isset($_SESSION['role'])) {
   if ($_SESSION['role'] === 'admin') {
@@ -155,8 +153,6 @@ if (isset($_SESSION['role'])) {
               $_SESSION['role'] = 'employee';
               $_SESSION['email'] = $user['email'];
               $_SESSION['isOk'] = 'yes';
-              // header("Location: user_dashboard.php");
-              // exit;
               $start = microtime(true);
 
               $otp = rand(100000, 999999);
@@ -165,26 +161,8 @@ if (isset($_SESSION['role'])) {
               $updateStmt = $conn->prepare("UPDATE Employees SET otp = ?, otp_expires = ? WHERE email = ?");
               $updateStmt->bind_param("iis", $otp, $otpExpires, $email);
               $updateStmt->execute();
-              $mail = new PHPMailer(true);
               try {
-                $mail->isSMTP();
-                $mail->Host = 'smtp.gmail.com'; // use your mail server
-                $mail->SMTPAuth = true;
-                $mail->Username = 'loki.kvms@gmail.com'; // your email
-                $mail->Password = '';  // your email password or app password
-                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-                $mail->Port = 587;
-
-                $mail->setFrom('loki.kvms@gmail.com', 'Leave Portal');
-                $mail->addAddress($email);
-
-                $mail->isHTML(true);
-                $mail->Subject = 'Your OTP for Login';
-                $mail->Body = "<h3>Your OTP is: <strong>$otp</strong></h3>";
-
-                $mail->send();
-                $end = microtime(true);
-                echo "Email sent in " . round($end - $start, 2) . " seconds.";
+                sendmail($email, 'Your OTP for Login', "<h3>Your new OTP is: <strong>$otp</strong></h3>");
                 header("Location: verify_otp.php");
                 exit;
               } catch (Exception $e) {

@@ -1,10 +1,8 @@
 <?php
 session_start();
 include 'includes/db.php';
-require __DIR__ . '/vendor/autoload.php';
+require 'includes/mail.php';
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
 
 $showOtpField = false;
 
@@ -29,22 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $update->bind_param("iis", $otp, $expires, $email);
             $update->execute();
 
-            $mail = new PHPMailer(true);
             try {
-                $mail->isSMTP();
-                $mail->Host = 'smtp.gmail.com';
-                $mail->SMTPAuth = true;
-                $mail->Username = 'loki.kvms@gmail.com';
-                $mail->Password = '';  
-                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-                $mail->Port = 587;
-
-                $mail->setFrom('loki.kvms@gmail.com', 'Leave Portal');
-                $mail->addAddress($email);
-                $mail->isHTML(true);
-                $mail->Subject = 'Password Reset OTP';
-                $mail->Body = "<h3>Your OTP is: <strong>$otp</strong></h3>";
-                $mail->send();
+                sendmail($email, 'Your OTP for Login', "<h3>Your new OTP is: <strong>$otp</strong></h3>");
 
                 $showOtpField = true;
                 echo "<script>setTimeout(() => showToast('OTP sent to your email.', 'success'), 100);</script>";

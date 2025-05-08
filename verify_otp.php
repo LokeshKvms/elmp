@@ -1,12 +1,8 @@
 <?php
 session_start();
 require 'includes/db.php';
-require 'vendor/autoload.php';
+require 'includes/mail.php';
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-// Redirect if email is not set in session
 if (!isset($_SESSION['email']) || !isset($_SESSION['isOk'])) {
     header("Location: login.php");
     exit;
@@ -53,30 +49,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } elseif (isset($_POST['resend'])) {
         $otp = rand(100000, 999999);
-        $expires = time() + 300; // 5 minutes
+        $expires = time() + 300;
 
-        // Update OTP in database
         $stmt = $conn->prepare("UPDATE Employees SET otp = ?, otp_expires = ? WHERE email = ?");
         $stmt->bind_param("iis", $otp, $expires, $email);
         if ($stmt->execute()) {
-            $mail = new PHPMailer(true);
             try {
-                $mail->isSMTP();
-                $mail->Host = 'smtp.gmail.com';
-                $mail->SMTPAuth = true;
-                $mail->Username = 'loki.kvms@gmail.com';
-                $mail->Password = '';
-                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-                $mail->Port = 587;
-
-                $mail->setFrom('loki.kvms@gmail.com', 'Leave Portal');
-                $mail->addAddress($email);
-
-                $mail->isHTML(true);
-                $mail->Subject = 'Your OTP for Login';
-                $mail->Body = "<h3>Your new OTP is: <strong>$otp</strong></h3>";
-
-                $mail->send();
+                sendmail($email,'Your OTP for Login',"<h3>Your new OTP is: <strong>$otp</strong></h3>");
                 $success = "OTP resent successfully.";
             } catch (Exception $e) {
                 $error = "OTP resend failed: " . $mail->ErrorInfo;

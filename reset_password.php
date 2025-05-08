@@ -15,10 +15,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo "<script>setTimeout(() => showToast('Passwords do not match.', 'danger'), 100);</script>";
     } else {
         $email = $_SESSION['reset_email'];
-        $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
 
         $stmt = $conn->prepare("UPDATE Employees SET password = ?, otp = NULL, otp_expires = NULL WHERE email = ?");
-        $stmt->bind_param("ss", $hashedPassword, $email);
+        $stmt->bind_param("ss", $newPassword, $email);
         if ($stmt->execute()) {
             unset($_SESSION['reset_email']);
 
