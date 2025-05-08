@@ -19,11 +19,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($result->num_rows === 1) {
         $_SESSION['reset_email'] = $email;
+        $user = $result->fetch_assoc();
 
         if (empty($otp_input)) {
             $otp = rand(100000, 999999);
-            $_SESSION['reset_otp'] = $otp;
-            $_SESSION['otp_expires'] = time() + 300;
+            $expires = time() + 300;
+
+            $update = $conn->prepare("UPDATE Employees SET otp = ?, otp_expires = ? WHERE email = ?");
+            $update->bind_param("iis", $otp, $expires, $email);
+            $update->execute();
 
             $mail = new PHPMailer(true);
             try {
@@ -31,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $mail->Host = 'smtp.gmail.com';
                 $mail->SMTPAuth = true;
                 $mail->Username = 'loki.kvms@gmail.com';
-                $mail->Password = 'password';  // Use app password
+                $mail->Password = '';  
                 $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
                 $mail->Port = 587;
 
@@ -48,7 +52,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 echo "<script>setTimeout(() => showToast('Failed to send OTP.', 'danger'), 100);</script>";
             }
         } else {
-            if ($otp_input == $_SESSION['reset_otp'] && time() < $_SESSION['otp_expires']) {
+            $storedOtp = $user['otp'];
+            $expiresAt = $user['otp_expires'];
+
+            if ($otp_input === $storedOtp && time() < $expiresAt) {
+                // Clear OTP after success
+                $clear = $conn->prepare("UPDATE Employees SET otp = NULL, otp_expires = NULL WHERE email = ?");
+                $clear->bind_param("s", $email);
+                $clear->execute();
+
                 header("Location: reset_password.php");
                 exit;
             } else {
@@ -61,6 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">

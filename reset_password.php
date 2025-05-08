@@ -15,18 +15,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo "<script>setTimeout(() => showToast('Passwords do not match.', 'danger'), 100);</script>";
     } else {
         $email = $_SESSION['reset_email'];
-        $stmt = $conn->prepare("UPDATE Employees SET password = ? WHERE email = ?");
-        $stmt->bind_param("ss", $newPassword, $email);
-        if ($stmt->execute()) {
-            unset($_SESSION['reset_email'], $_SESSION['reset_otp'], $_SESSION['otp_expires']);
-            $_SESSION['email'] = $email;
+        $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
 
-            // Log in the user
+        $stmt = $conn->prepare("UPDATE Employees SET password = ?, otp = NULL, otp_expires = NULL WHERE email = ?");
+        $stmt->bind_param("ss", $hashedPassword, $email);
+        if ($stmt->execute()) {
+            unset($_SESSION['reset_email']);
+
+            // Auto-login user
             $stmt = $conn->prepare("SELECT * FROM Employees WHERE email = ?");
             $stmt->bind_param("s", $email);
             $stmt->execute();
             $user = $stmt->get_result()->fetch_assoc();
 
+            $_SESSION['email'] = $email;
             $_SESSION['user_id'] = $user['employee_id'];
             $_SESSION['name'] = $user['name'];
             $_SESSION['role'] = ($email === 'admin@gmail.com') ? 'admin' : 'employee';
@@ -39,6 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
 ?>
 
 <!DOCTYPE html>

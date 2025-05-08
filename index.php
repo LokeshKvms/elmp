@@ -154,20 +154,24 @@ if (isset($_SESSION['role'])) {
               $_SESSION['name'] = $user['name'];
               $_SESSION['role'] = 'employee';
               $_SESSION['email'] = $user['email'];
+              $_SESSION['isOk'] = 'yes';
               // header("Location: user_dashboard.php");
               // exit;
               $start = microtime(true);
 
               $otp = rand(100000, 999999);
-              $_SESSION['otp'] = $otp;
-              $_SESSION['otp_expires'] = time() + 60;
+              $otpExpires = time() + 60;
+
+              $updateStmt = $conn->prepare("UPDATE Employees SET otp = ?, otp_expires = ? WHERE email = ?");
+              $updateStmt->bind_param("iis", $otp, $otpExpires, $email);
+              $updateStmt->execute();
               $mail = new PHPMailer(true);
               try {
                 $mail->isSMTP();
                 $mail->Host = 'smtp.gmail.com'; // use your mail server
                 $mail->SMTPAuth = true;
                 $mail->Username = 'loki.kvms@gmail.com'; // your email
-                $mail->Password = 'password';  // your email password or app password
+                $mail->Password = '';  // your email password or app password
                 $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
                 $mail->Port = 587;
 

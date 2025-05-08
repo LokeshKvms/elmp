@@ -1,62 +1,88 @@
 <?php
 session_start();
+require 'includes/db.php';
 require 'vendor/autoload.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// Redirect if OTP or email are not set
-if (!isset($_SESSION['otp']) || !isset($_SESSION['email'])) {
+// Redirect if email is not set in session
+if (!isset($_SESSION['email']) || !isset($_SESSION['isOk'])) {
     header("Location: login.php");
     exit;
 }
 
+$email = $_SESSION['email'];
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['verify'])) {
-        // Verify OTP entered by the user
         $enteredOtp = $_POST['otp'];
-        if (time() > $_SESSION['otp_expires']) {
-            $error = "OTP expired.";
-        } elseif ($enteredOtp == $_SESSION['otp']) {
-            // OTP is correct, proceed to the dashboard
-            unset($_SESSION['otp'], $_SESSION['otp_expires']);
-            if ($_SESSION['role'] === 'admin') {
-                header("Location: admin_dashboard.php");
+
+        // Fetch stored OTP and expiry from database
+        $stmt = $conn->prepare("SELECT otp, otp_expires, employee_id FROM Employees WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows === 1) {
+            $row = $result->fetch_assoc();
+            $storedOtp = $row['otp'];
+            $otpExpires = $row['otp_expires'];
+            $role = $row['employee_id'];
+
+            if (time() > $otpExpires) {
+                $error = "OTP expired.";
+            } elseif ($enteredOtp == $storedOtp) {
+                // Clear OTP fields
+                $stmt = $conn->prepare("UPDATE Employees SET otp = NULL, otp_expires = NULL WHERE email = ?");
+                $stmt->bind_param("s", $email);
+                $stmt->execute();
+
+                // Redirect to dashboard
+                if ($role === 1) {
+                    header("Location: admin_dashboard.php");
+                } else {
+                    header("Location: user_dashboard.php");
+                }
+                exit;
             } else {
-                header("Location: user_dashboard.php");
+                $error = "Invalid OTP.";
             }
-            exit;
         } else {
-            // Invalid OTP entered
-            $error = "Invalid OTP.";
+            $error = "User not found.";
         }
     } elseif (isset($_POST['resend'])) {
-        // Only resend OTP when the "Resend OTP" button is clicked
         $otp = rand(100000, 999999);
-        $_SESSION['otp'] = $otp;
-        $_SESSION['otp_expires'] = time() + 300;  // 5 minutes expiry
+        $expires = time() + 300; // 5 minutes
 
-        $mail = new PHPMailer(true);
-        try {
-            $mail->isSMTP();
-            $mail->Host = 'smtp.gmail.com';
-            $mail->SMTPAuth = true;
-            $mail->Username = 'loki.kvms@gmail.com';
-            $mail->Password = 'password';
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port = 587;
+        // Update OTP in database
+        $stmt = $conn->prepare("UPDATE Employees SET otp = ?, otp_expires = ? WHERE email = ?");
+        $stmt->bind_param("iis", $otp, $expires, $email);
+        if ($stmt->execute()) {
+            $mail = new PHPMailer(true);
+            try {
+                $mail->isSMTP();
+                $mail->Host = 'smtp.gmail.com';
+                $mail->SMTPAuth = true;
+                $mail->Username = 'loki.kvms@gmail.com';
+                $mail->Password = '';
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                $mail->Port = 587;
 
-            $mail->setFrom('loki.kvms@gmail.com', 'Leave Portal');
-            $mail->addAddress($_SESSION['email']);
+                $mail->setFrom('loki.kvms@gmail.com', 'Leave Portal');
+                $mail->addAddress($email);
 
-            $mail->isHTML(true);
-            $mail->Subject = 'Your OTP for Login';
-            $mail->Body = "<h3>Your new OTP is: <strong>$otp</strong></h3>";
+                $mail->isHTML(true);
+                $mail->Subject = 'Your OTP for Login';
+                $mail->Body = "<h3>Your new OTP is: <strong>$otp</strong></h3>";
 
-            $mail->send();
-            $success = "OTP resent successfully.";
-        } catch (Exception $e) {
-            $error = "OTP resend failed: " . $mail->ErrorInfo;
+                $mail->send();
+                $success = "OTP resent successfully.";
+            } catch (Exception $e) {
+                $error = "OTP resend failed: " . $mail->ErrorInfo;
+            }
+        } else {
+            $error = "Failed to update OTP.";
         }
     }
 }
