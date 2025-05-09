@@ -86,103 +86,157 @@ $drafts->bind_param("i", $userId);
 $drafts->execute();
 $draftList = $drafts->get_result();
 ?>
+<!DOCTYPE html>
 
-<main class="flex-grow-1 container py-4">
-  <h2 class="mb-4">My Drafts</h2>
-  <?= $message ?>
+<head>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 
-  <?php if (!$editing): ?>
-    <?php if ($draftList->num_rows): ?>
-      <table class="table table-striped table-bordered text-center">
-        <thead>
-          <tr>
-            <th>S.No</th>
-            <th>Type</th>
-            <th>From</th>
-            <th>To</th>
-            <th>Reason</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <?php $i = 1;
-          while ($d = $draftList->fetch_assoc()): ?>
+  <!-- DataTables Core CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+
+  <!-- DataTables Buttons Extension CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <!-- Bootstrap 5 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- DataTables Core JS -->
+  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+
+  <!-- DataTables Buttons Extension JS -->
+  <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+
+  <!-- JSZip (required for Excel export) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <style>
+    .dataTables_filter {
+      margin-bottom: 1rem !important;
+    }
+
+
+    #theTable thead th {
+      text-align: center !important;
+    }
+  </style>
+</head>
+
+<body>
+
+
+  <main class="flex-grow-1 container py-4">
+    <h2 class="mb-4">My Drafts</h2>
+    <?= $message ?>
+
+    <?php if (!$editing): ?>
+      <?php if ($draftList->num_rows): ?>
+        <table id="theTable" class="table table-striped table-bordered text-center">
+          <thead>
             <tr>
-              <td><?= $i ?></td>
-              <td><?= htmlspecialchars($d['type_name']) ?></td>
-              <td><?= $d['start_date'] ?></td>
-              <td><?= $d['end_date'] ?></td>
-              <td><?= $d['reason'] ?></td>
-              <td class="d-flex justify-content-around">
-                <a href="?edit=<?= $d['request_id'] ?>" class="btn btn-sm btn-primary">Edit</a>
-                <a href="?delete=<?= $d['request_id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this draft?');">
-                  Delete
-                </a>
-              </td>
+              <th>S.No</th>
+              <th>Type</th>
+              <th>From</th>
+              <th>To</th>
+              <th>Reason</th>
+              <th>Actions</th>
             </tr>
-          <?php $i++;
-          endwhile; ?>
-        </tbody>
-      </table>
-    <?php else: ?>
-      <div class="alert alert-info">No drafts found.</div>
+          </thead>
+          <tbody>
+            <?php $i = 1;
+            while ($d = $draftList->fetch_assoc()): ?>
+              <tr>
+                <td><?= $i ?></td>
+                <td><?= htmlspecialchars($d['type_name']) ?></td>
+                <td><?= $d['start_date'] ?></td>
+                <td><?= $d['end_date'] ?></td>
+                <td><?= $d['reason'] ?></td>
+                <td class="d-flex justify-content-center">
+                  <a href="?edit=<?= $d['request_id'] ?>" class="btn btn-sm btn-primary px-3 me-2">Edit</a>
+                  <a href="?delete=<?= $d['request_id'] ?>" class="btn btn-sm btn-danger ms-2" onclick="return confirm('Delete this draft?');">
+                    Delete
+                  </a>
+                </td>
+              </tr>
+            <?php $i++;
+            endwhile; ?>
+          </tbody>
+        </table>
+      <?php else: ?>
+        <div class="alert alert-info">No drafts found.</div>
+      <?php endif; ?>
     <?php endif; ?>
-  <?php endif; ?>
 
-  <?php if ($editing): ?>
-    <div class="card p-4 mb-4">
-      <h4>Edit Draft</h4>
-      <form method="post">
-        <input type="hidden" name="request_id" value="<?= $draft['request_id'] ?>">
-        <div class="mb-3">
-          <label class="form-label">Leave Type</label>
-          <select name="leave_type" class="form-select" required>
-            <?php foreach ($types as $t): ?>
-              <option value="<?= $t['leave_type_id'] ?>" <?= $t['leave_type_id'] == $draft['leave_type_id'] ? 'selected' : '' ?>>
-                <?= htmlspecialchars($t['type_name']) ?>
-              </option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Start Date</label>
-          <input type="date" name="start_date" class="form-control" value="<?= $draft['start_date'] ?>" required>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">End Date</label>
-          <input type="date" name="end_date" class="form-control" value="<?= $draft['end_date'] ?>" required>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Reason</label>
-          <textarea name="reason" class="form-control" rows="3" required><?= htmlspecialchars($draft['reason']) ?></textarea>
-        </div>
-        <div class="d-flex justify-content-between">
-          <div class="d-flex justify-content-start gap-1">
-            <button type="submit" name="action" value="draft" class="btn btn-secondary">Save as Draft</button>
-            <a href="?delete=<?= $draft['request_id'] ?>" class="btn btn-danger" onclick="return confirm('Delete this draft permanently?');">Delete Draft</a>
+    <?php if ($editing): ?>
+      <div class="card p-4 mb-4">
+        <h4>Edit Draft</h4>
+        <form method="post">
+          <input type="hidden" name="request_id" value="<?= $draft['request_id'] ?>">
+          <div class="mb-3">
+            <label class="form-label">Leave Type</label>
+            <select name="leave_type" class="form-select" required>
+              <?php foreach ($types as $t): ?>
+                <option value="<?= $t['leave_type_id'] ?>" <?= $t['leave_type_id'] == $draft['leave_type_id'] ? 'selected' : '' ?>>
+                  <?= htmlspecialchars($t['type_name']) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
           </div>
-          <button type="submit" name="action" value="pending" class="btn btn-primary">Submit for Approval</button>
+          <div class="mb-3">
+            <label class="form-label">Start Date</label>
+            <input type="date" name="start_date" class="form-control" value="<?= $draft['start_date'] ?>" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">End Date</label>
+            <input type="date" name="end_date" class="form-control" value="<?= $draft['end_date'] ?>" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Reason</label>
+            <textarea name="reason" class="form-control" rows="3" required><?= htmlspecialchars($draft['reason']) ?></textarea>
+          </div>
+          <div class="d-flex justify-content-between">
+            <div class="d-flex justify-content-start gap-1">
+              <button type="submit" name="action" value="draft" class="btn btn-secondary">Save as Draft</button>
+              <a href="?delete=<?= $draft['request_id'] ?>" class="btn btn-danger" onclick="return confirm('Delete this draft permanently?');">Delete Draft</a>
+            </div>
+            <button type="submit" name="action" value="pending" class="btn btn-primary">Submit for Approval</button>
+          </div>
+        </form>
+      </div>
+    <?php endif; ?>
+
+    <footer class="text-center mt-auto py-3 text-muted small bottom-0">
+      &copy; <?= date("Y") ?> Employee Leave Portal
+    </footer>
+  </main>
+
+  <script>
+    $(document).ready(function() {
+      $('#theTable').DataTable({
+        lengthChange: false,
+        dom: 'Bfrtip',
+        buttons: [{
+          extend: 'excel',
+          text: 'Export to Excel'
+        }]
+      });
+    });
+  </script>
+
+  <?php if ($message): ?>
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+      <div class="toast align-items-center text-white bg-success border-0 show" role="alert">
+        <div class="d-flex">
+          <div class="toast-body"><?= htmlspecialchars($message) ?></div>
         </div>
-      </form>
-    </div>
-  <?php endif; ?>
-
-  <footer class="text-center mt-auto py-3 text-muted small bottom-0">
-    &copy; <?= date("Y") ?> Employee Leave Portal
-  </footer>
-</main>
-
-<?php if ($message): ?>
-  <div class="position-fixed top-0 end-0 p-3" style="z-index: 1100;">
-    <div class="toast align-items-center text-white bg-success border-0 show" role="alert">
-      <div class="d-flex">
-        <div class="toast-body"><?= htmlspecialchars($message) ?></div>
       </div>
     </div>
-  </div>
-  <script>
-    setTimeout(function() {
-      window.location.href = '<?= $redirectTo ?>';
-    }, 3000);
-  </script>
-<?php endif; ?>
+    <script>
+      setTimeout(function() {
+        window.location.href = '<?= $redirectTo ?>';
+      }, 3000);
+    </script>
+  <?php endif; ?>
+</body>

@@ -4,7 +4,7 @@ require 'includes/db.php';
 require 'includes/mail.php';
 
 if (!isset($_SESSION['email']) || !isset($_SESSION['isOk'])) {
-    header("Location: login.php");
+    header("Location: index.php");
     exit;
 }
 

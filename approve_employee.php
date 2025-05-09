@@ -137,11 +137,31 @@ if (isset($_GET['reject'])) {
 <head>
     <meta charset="UTF-8">
     <title>Admin Dashboard - Approve Users</title>
+    <!-- Bootstrap 5 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+    <!-- DataTables Core CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+
+    <!-- DataTables Buttons Extension CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+
+    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+
+    <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- DataTables Core JS -->
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+
+    <!-- DataTables Buttons Extension JS -->
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+
+    <!-- JSZip (required for Excel export) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
     <style>
         .dataTables_filter {
             margin-bottom: 1rem !important;
@@ -212,8 +232,8 @@ if (isset($_GET['reject'])) {
     <main class="flex-grow-1">
         <div class="container mt-1">
             <div class="d-flex justify-content-between">
-                <h3>List of Employees</h3>
-                <button id="addBtn" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#employeeModal">Add Employee</button>
+                <h3 class="mb-4 pt-2">List of Employees</h3>
+                <button id="addBtn" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#employeeModal">Add Employee</button>
             </div>
 
             <table id="employeeTable" class="table table-bordered table-striped my-3">
@@ -258,7 +278,7 @@ if (isset($_GET['reject'])) {
     <button class='btn btn-danger btn-sm rejectBtn' data-id='{$emp['employee_id']}'>Reject</button>") .
                                 "</td>
     <td>
-        <button class='btn btn-primary btn-sm editBtn'
+        <button class='btn btn-warning px-3 btn-sm editBtn'
         data-id='{$emp['employee_id']}'
         data-name='{$emp['name']}'
         data-email='{$emp['email']}'
@@ -314,7 +334,12 @@ if (isset($_GET['reject'])) {
                 order: [
                     [5, 'asc']
                 ],
-                pageLength: 5
+                pageLength: 5,
+                dom: 'Bfrtip', // Enables export buttons
+                buttons: [{
+                    extend: 'excel',
+                    text: 'Export to Excel'
+                }]
             });
 
             $('#cancelBtn').click(function(e) {

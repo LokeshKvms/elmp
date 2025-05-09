@@ -67,10 +67,29 @@ if (isset($_GET['action'], $_GET['id'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Approve Leave Requests</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- DataTables CSS -->
-    <link href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+    <!-- DataTables Core CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+
+    <!-- DataTables Buttons Extension CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- DataTables Core JS -->
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+
+    <!-- DataTables Buttons Extension JS -->
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+
+    <!-- JSZip (required for Excel export) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         .dataTables_filter {
             margin-bottom: 1rem !important;
@@ -98,7 +117,7 @@ if (isset($_GET['action'], $_GET['id'])) {
         <?php unset($_SESSION['toast_message']); ?>
     <?php endif; ?>
 
-    <h5 class="mb-3">Pending Leave Requests</h5>
+    <h3 class="mb-3 pt-3">Pending Leave Requests</h3>
 
     <?php
     $sql = "
@@ -160,7 +179,7 @@ if (isset($_GET['action'], $_GET['id'])) {
     }
     ?>
 
-    <h5 class="mb-3 mt-5">Leave Requests</h5>
+    <h3 class="mb-3 mt-5">Leave Requests</h3>
 
     <table id="leaveTable" class="table table-bordered text-center">
         <thead>
@@ -208,14 +227,22 @@ if (isset($_GET['action'], $_GET['id'])) {
     </footer>
 
     <!-- Bootstrap & DataTables Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script>
         $('#leaveTable').DataTable({
-            lengthChange: false
+            lengthChange: false,
+            dom: 'Bfrtip',
+            buttons: [{
+                extend: 'excel',
+                text: 'Export to Excel'
+            }]
         });
         $('#theTable').DataTable({
-            lengthChange: false
+            lengthChange: false,
+            dom: 'Bfrtip',
+            buttons: [{
+                extend: 'excel',
+                text: 'Export to Excel'
+            }]
         });
 
         document.addEventListener("DOMContentLoaded", function() {
