@@ -13,6 +13,7 @@ $dashboard = $role === 'admin' ? 'Admin Portal' : 'Employee Portal';
 <style>
   body {
     font-family: 'Rubik', sans-serif !important;
+    background-color: #000 !important;
   }
 
   #sidebar {
@@ -21,7 +22,7 @@ $dashboard = $role === 'admin' ? 'Admin Portal' : 'Employee Portal';
     position: fixed;
     top: 0;
     left: -250px;
-    background-color: #f8f9fa;
+    background-color: #191c24;
     transition: left 0.3s;
     z-index: 999;
     padding-top: 60px;
@@ -36,10 +37,12 @@ $dashboard = $role === 'admin' ? 'Admin Portal' : 'Employee Portal';
     display: block;
     color: #333;
     text-decoration: none;
+    color: white;
   }
 
   .sidebar-link:hover {
-    background-color: #e9ecef;
+    background-color: #000;
+    font-weight: bold;
   }
 
   #main-content {
@@ -50,10 +53,28 @@ $dashboard = $role === 'admin' ? 'Admin Portal' : 'Employee Portal';
   #main-content.shifted {
     margin-left: 250px;
   }
-</style>
 
+  .custom-table tbody tr:nth-child(odd) {
+    background-color: #191c24 !important;
+    color: #fff;
+  }
+
+  .custom-table thead tr th {
+    text-align: center;
+  }
+
+  .custom-table td,
+  .custom-table th {
+    vertical-align: middle;
+  }
+
+  .custom-table thead {
+    background-color: #343a40;
+    color: #fff;
+  }
+</style>
 <!-- Header -->
-<header class="bg-dark text-white py-2 px-3 d-flex justify-content-between align-items-center shadow fixed-top" style="z-index:1000;">
+<header class="text-white py-3 px-3 d-flex justify-content-between align-items-center fixed-top border-bottom border-dark border-3" style="z-index:1000;background-color:#191c24">
   <div class="d-flex align-items-center">
     <i class="fas fa-bars me-3 cursor-pointer" style="cursor:pointer;" onclick="toggleSidebar()"></i>
     <strong>ELMS</strong>
@@ -74,12 +95,12 @@ $dashboard = $role === 'admin' ? 'Admin Portal' : 'Employee Portal';
 
 
 <!-- Sidebar -->
-<div id="sidebar" class="shadow active">
-  <div class="text-center">
+<div id="sidebar" class="shadow active border-end border-dark border-3">
+  <div class="text-center text-white">
     <i class="fas fa-user-circle fa-3x mb-2 mt-3"></i>
     <h6><?= htmlspecialchars($name) ?></h6>
-    <small class="text-muted"><?= ucfirst($role) ?></small><br>
-    <small class="text-muted"><?= htmlspecialchars($email) ?></small>
+    <small class="text-white"><?= ucfirst($role) ?></small><br>
+    <small class="text-white"><?= htmlspecialchars($email) ?></small>
   </div>
   <hr>
 
@@ -136,4 +157,4 @@ $dashboard = $role === 'admin' ? 'Admin Portal' : 'Employee Portal';
 </script>
 
 <!-- Wrapper for Page Content -->
-<div id="main-content" class="pt-5 mt-2 px-3 shifted">
+<div id="main-content" class="pt-5 mt-2 px-3 shifted text-white">

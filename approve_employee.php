@@ -181,10 +181,10 @@ if (isset($_GET['reject'])) {
 
     <div class="modal fade" id="employeeModal" tabindex="-1">
         <div class="modal-dialog">
-            <form method="POST" id="employeeForm" class="modal-content">
+            <form method="POST" id="employeeForm" class="modal-content bg-dark px-3">
                 <div class="modal-header">
                     <h5 class="modal-title">Add / Edit Employee</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" style="background-color:white !important;"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" name="employee_id" id="employee_id">

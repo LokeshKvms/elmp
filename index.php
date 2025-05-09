@@ -174,7 +174,7 @@ if (isset($_SESSION['role'])) {
           } else {
             echo "<script>showToast('Incorrect password.', 'danger');</script>";
           }
-        } else {
+        } else {  
           echo "<script>showToast('User not found.', 'danger');</script>";
         }
       }

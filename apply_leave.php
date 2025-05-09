@@ -5,7 +5,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'employee') {
   exit;
 }
 include 'includes/db.php';
-include 'includes/header.php';
 
 $userId = $_SESSION['user_id'];
 $statusMessage = '';
@@ -51,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   // Count weekdays excluding weekends and holidays
   $workingDays = 0;
   $current = new DateTime($start_date);
-
+  
   while ($current <= new DateTime($end_date)) {
     $day = $current->format('N'); // 1 = Monday, 7 = Sunday
     $dateStr = $current->format('Y-m-d');
@@ -60,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     $current->modify('+1 day');
   }
-
+  
   // Check if working days count is 0
   if ($workingDays == 0) {
     $statusMessage = 'You have selected 0 working days.';
@@ -73,10 +72,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $stmt = $conn->prepare("
         INSERT INTO Leave_Requests
           (employee_id, leave_type_id, start_date, end_date, reason, status, requested_at)
-        VALUES (?, ?, ?, ?, ?, ?, NOW())
+          VALUES (?, ?, ?, ?, ?, ?, NOW())
       ");
       $stmt->bind_param("iissss", $userId, $leave_type_id, $start_date, $end_date, $reason, $status);
-
+      
       if ($stmt->execute()) {
         $statusMessage = $status === 'pending' ? 'Leave submitted successfully.' : 'Leave saved as draft successfully.';
         $redirectTo = $status === 'pending' ? 'user_dashboard.php' : 'drafts.php';
@@ -87,6 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
   }
 }
+include 'includes/header.php';
 ?>
 
 <main class="flex-grow-1 container py-4">

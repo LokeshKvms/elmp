@@ -1,7 +1,6 @@
 <?php
 session_start();
 include 'includes/db.php';
-include 'includes/header.php';
 
 // Redirect if not admin
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
@@ -15,7 +14,7 @@ $manager_id = $_SESSION['user_id'];
 if (isset($_GET['action'], $_GET['id'])) {
     $action = $_GET['action'];
     $req_id = (int)$_GET['id'];
-
+    
     // Fetch the specific request
     $reqRes = $conn->query("SELECT * FROM Leave_Requests WHERE request_id = $req_id");
     if ($reqRes && $reqRes->num_rows === 1) {
@@ -29,7 +28,7 @@ if (isset($_GET['action'], $_GET['id'])) {
                  SET status='$status', reviewed_at='$reviewed_at', reviewed_by=$manager_id
                  WHERE request_id=$req_id"
             );
-
+            
             // After the approval/rejection logic:
             if ($upd) {
                 if ($status === 'approved') {
@@ -51,13 +50,14 @@ if (isset($_GET['action'], $_GET['id'])) {
             } else {
                 $_SESSION['toast_message'] = ['message' => 'Failed to update leave request.', 'type' => 'danger'];
             }
-
+            
             // Redirect to avoid resubmission of data on page refresh
             header("Location: approve_leave.php");
             exit;
         }
     }
 }
+include 'includes/header.php';
 ?>
 
 <!DOCTYPE html>

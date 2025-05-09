@@ -137,7 +137,7 @@ while ($row = $balanceResult->fetch_assoc()) {
       <?php foreach ($leaveData as $data): ?>
         <!-- Allocated -->
         <div class="col">
-          <div class="card text-center border-dark border-3 shadow-sm">
+          <div class="card text-center text-white border-dark border-3 shadow-sm" style="background-color: #191c24;">
             <div class="card-body py-3">
               <h6 class="card-title mb-2"><?= htmlspecialchars($data['type_name']) ?> - Allocated</h6>
               <p class="display-6 fw-semibold mb-1"><?= $data['total_allocated'] ?></p>
@@ -148,7 +148,7 @@ while ($row = $balanceResult->fetch_assoc()) {
 
         <!-- Used -->
         <div class="col">
-          <div class="card text-center border-dark border-3 shadow-sm">
+          <div class="card text-center text-white border-dark border-3 shadow-sm" style="background-color: #191c24;">
             <div class="card-body py-3">
               <h6 class="card-title mb-2"><?= htmlspecialchars($data['type_name']) ?> - Used</h6>
               <p class="display-6 fw-semibold mb-1"><?= $data['used'] ?></p>
@@ -159,7 +159,7 @@ while ($row = $balanceResult->fetch_assoc()) {
 
         <!-- Remaining -->
         <div class="col">
-          <div class="card text-center border-dark border-3 shadow-sm">
+          <div class="card text-center text-white border-dark border-3 shadow-sm" style="background-color: #191c24;">
             <div class="card-body py-3">
               <h6 class="card-title mb-2"><?= htmlspecialchars($data['type_name']) ?> - Remaining</h6>
               <p class="display-6 fw-semibold mb-1"><?= $data['total_allocated'] - $data['used'] ?></p>
@@ -175,14 +175,14 @@ while ($row = $balanceResult->fetch_assoc()) {
   <!-- Leave History -->
   <div class="mb-4">
     <h4 class="mb-4">Leave History</h4>
-    <table id="theTable" class="table table-striped table-bordered">
-      <thead>
-        <tr class="table-dark">
-          <th>Leave Type</th>
-          <th>Start Date</th>
-          <th>End Date</th>
-          <th>Status</th>
-          <th>Reason</th>
+    <table id="theTable" class="table table-striped text-center">
+      <thead class="text-center">
+        <tr class="table-dark text-center">
+          <th class="text-center">Leave Type</th>
+          <th class="text-center">Start Date</th>
+          <th class="text-center">End Date</th>
+          <th class="text-center">Status</th>
+          <th class="text-center">Reason</th>
         </tr>
       </thead>
       <tbody>
@@ -207,15 +207,15 @@ while ($row = $balanceResult->fetch_assoc()) {
           }
           ?>
           <tr>
-            <td><?= htmlspecialchars($row['type_name']) ?></td>
-            <td><?= $row['start_date'] ?></td>
-            <td><?= $row['end_date'] ?></td>
-            <td>
+            <td class="text-light bg-transparent"><?= htmlspecialchars($row['type_name']) ?></td>
+            <td class="text-light bg-transparent"><?= $row['start_date'] ?></td>
+            <td class="text-light bg-transparent"><?= $row['end_date'] ?></td>
+            <td class="text-light bg-transparent">
               <span class="badge bg-<?= $badge ?>">
                 <?= ucfirst($row['status']) ?>
               </span>
             </td>
-            <td><?= htmlspecialchars($row['reason']) ?></td>
+            <td class="text-light bg-transparent"><?= htmlspecialchars($row['reason']) ?></td>
           </tr>
         <?php endwhile; ?>
       </tbody>

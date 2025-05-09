@@ -1,7 +1,6 @@
 <?php
 session_start();
 include 'includes/db.php';
-include 'includes/header.php';
 
 // Only admin allowed
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
@@ -44,11 +43,12 @@ $pastHolidays = $resPastHolidays->fetch_assoc()['cnt'];
 // Upcoming holidays
 $resUpcomingHolidays = $conn->query("SELECT COUNT(*) AS cnt FROM holidays WHERE holiday_date > CURDATE()");
 $upcomingHolidays = $resUpcomingHolidays->fetch_assoc()['cnt'];
+include 'includes/header.php';
 ?>
 
 <main class="flex-grow-1 container">
   <h2 class="mb-4">Admin Dashboard</h2>
-
+  
   <div class="row row-cols-1 row-cols-md-3 g-4">
     <!-- Total Employees -->
     <div class="col">
@@ -62,8 +62,8 @@ $upcomingHolidays = $resUpcomingHolidays->fetch_assoc()['cnt'];
         </div>
       </a>
     </div>
-
-
+    
+    
     <!-- Employees Approved -->
     <div class="col">
       <a href="approve_employee.php" class="text-decoration-none">

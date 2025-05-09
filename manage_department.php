@@ -1,7 +1,6 @@
 <?php
 session_start();
 include 'includes/db.php';
-include 'includes/header.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: index.php");
@@ -50,6 +49,7 @@ if (isset($_GET['delete'])) {
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
+include 'includes/header.php';
 ?>
 
 <!DOCTYPE html>
@@ -97,11 +97,11 @@ if (isset($_GET['delete'])) {
     <!-- Add/Edit Modal -->
     <div class="modal fade" id="addDepartmentModal" tabindex="-1">
         <div class="modal-dialog">
-            <div class="modal-content">
+            <div class="modal-content bg-dark px-3">
                 <form method="POST" id="departmentForm">
                     <div class="modal-header">
                         <h5 class="modal-title" id="addDepartmentModalLabel">Add / Edit Department</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="background-color:white !important;"></button>
                     </div>
                     <div class="modal-body">
                         <input type="hidden" name="department_id" id="department_id">
@@ -147,7 +147,7 @@ if (isset($_GET['delete'])) {
             <?php endif; ?>
         </div>
 
-        <table id="theTable" class="table table-bordered table-striped text-center">
+        <table id="theTable" class="table custom-table">
             <thead class="table-dark">
                 <tr>
                     <th>S.No</th>
@@ -222,7 +222,7 @@ if (isset($_GET['delete'])) {
         <?php endif; ?>
         $('#theTable').DataTable({
             lengthChange: false,
-            dom:'Bfrtip',
+            dom: 'Bfrtip',
             buttons: [{
                 extend: 'excel',
                 text: 'Export to Excel'

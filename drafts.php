@@ -6,7 +6,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'employee') {
 }
 
 include 'includes/db.php';
-include 'includes/header.php';
 
 $userId = $_SESSION['user_id'];
 $message = '';
@@ -52,7 +51,7 @@ function countWeekdays($start, $end)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_id'])) {
   $reqId = (int)$_POST['request_id'];
   $leave_type_id = (int)$_POST['leave_type'];
-
+  
   // Ensure leave_range is valid before processing
   if (!empty($_POST['leave_range'])) {
     $range = explode('to', $_POST['leave_range']);
@@ -61,17 +60,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_id'])) {
   } else {
     $start_date = $end_date = ''; // Fallback if no date is selected
   }
-
+  
   $reason = $_POST['reason'];
   $status = in_array($_POST['action'], ['draft', 'pending']) ? $_POST['action'] : 'draft';
-
+  
   // Update the draft in the database
   $upd = $conn->prepare("UPDATE Leave_Requests SET leave_type_id = ?, start_date = ?, end_date = ?, reason = ?, status = ? WHERE request_id = ? AND employee_id = ?");
   $upd->bind_param("issssii", $leave_type_id, $start_date, $end_date, $reason, $status, $reqId, $userId);
   $upd->execute();
-
+  
   $message = "Draft " . ($status === 'pending' ? "submitted" : "updated") . " successfully.";
-
+  
   // Set redirection based on the action
   $redirectTo = ($status === 'pending') ? 'user_dashboard.php' : 'drafts.php';
 }
@@ -95,6 +94,7 @@ $drafts = $conn->prepare("SELECT r.request_id, l.type_name, r.start_date, r.end_
 $drafts->bind_param("i", $userId);
 $drafts->execute();
 $draftList = $drafts->get_result();
+include 'includes/header.php';
 ?>
 
 <!DOCTYPE html>
