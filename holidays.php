@@ -120,7 +120,7 @@ if (isset($_GET['delete'])) {
         <div class="toast-body fw-semibold">Delete this holiday?</div>
         <div class="d-flex align-items-center">
           <a id="confirmDeleteBtn" href="#" class="btn btn-sm btn-light me-2">Yes</a>
-          <button type="button" class="btn btn-sm btn-outline-light" data-bs-dismiss="toast">No</button>
+          <button type="button" class="btn btn-sm btn-outline-light me-2" data-bs-dismiss="toast">No</button>
         </div>
       </div>
     </div>

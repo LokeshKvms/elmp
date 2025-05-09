@@ -11,26 +11,57 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 
 // Handle Add/Edit
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $id = $_POST['employee_id'] ?? '';
+    $id = $_POST['employee_id'] ?? '';  // Get employee ID from the form
     $name = $_POST['name'];
     $email = $_POST['email'];
     $dept = $_POST['department_id'];
     $pos = $_POST['position'];
     $date = $_POST['hire_date'];
-    $password = $_POST['password'];
 
     if ($id) {
+        // Update existing employee
+        echo "console.log('Editing employee with ID:'', $(this).data('id'));";
         $stmt = $conn->prepare("UPDATE Employees SET name=?, email=?, department_id=?, position=?, hire_date=? WHERE employee_id=?");
         $stmt->bind_param("ssissi", $name, $email, $dept, $pos, $date, $id);
         $_SESSION['toast'] = ['msg' => 'Employee updated successfully.', 'class' => 'bg-info'];
+        $stmt->execute();
+        $stmt->close();
     } else {
-        $stmt = $conn->prepare("INSERT INTO Employees (name, email, department_id, position, hire_date,password, status) VALUES (?, ?, ?, ?, ?, ?, 'active')");
-        $stmt->bind_param("ssisss", $name, $email, $dept, $pos, $date,$password);
+        // Add new employee
+        $stmt = $conn->prepare("INSERT INTO Employees (name, email, department_id, position, hire_date, password, status) VALUES (?, ?, ?, ?, ?, 'elms@123', 'active')");
+        $stmt->bind_param("ssiss", $name, $email, $dept, $pos, $date);
+        $stmt->execute();
+        $newEmpId = $stmt->insert_id;
+        $stmt->close();
+        $year = date("Y");
+        $default_used = 0;
+        $leaveTypes = $conn->query("SELECT leave_type_id, type_name FROM leave_types");
+        $balanceStmt = $conn->prepare("INSERT INTO leave_balances (employee_id, leave_type_id, year, total_allocated, used) VALUES (?, ?, ?, ?, ?)");
+
+        while ($type = $leaveTypes->fetch_assoc()) {
+            $leave_type_id = $type['leave_type_id'];
+            $type_name = strtolower($type['type_name']);
+            $default_allocated = ($type_name === 'casual leave') ? 12 : 6;
+            $balanceStmt->bind_param("iisii", $newEmpId, $leave_type_id, $year, $default_allocated, $default_used);
+            $balanceStmt->execute();
+        }
+        $balanceStmt->close();
+
+        $subject = "Welcome to the Company!";
+        $body = "
+        <h4>Hi {$name},</h4>
+        <p>You have been approved as an employee at our company for the position of {$pos}.</p>
+        <p>Your <strong>Email is</strong> {$email} and it's password is elms@123<br>
+        <p>Please log in to the portal using your registered email and password. An OTP will be sent to your email for login verification.</p>
+        <p>Reset your password by clicking forgot password.</p>
+        <br>
+        <p>Regards,<br>Admin</p>";
+
+        sendMail($email, $subject, $body);
+
         $_SESSION['toast'] = ['msg' => 'Employee added successfully.', 'class' => 'bg-success'];
     }
 
-    $stmt->execute();
-    $stmt->close();
     header("Location: approve_employee.php");
     exit;
 }
@@ -128,45 +159,6 @@ if (isset($_GET['reject'])) {
 
 <body class="d-flex flex-column min-vh-100">
 
-    <!-- Add/Edit Employee Modal -->
-    <!-- <div class="modal fade" id="employeeModal" tabindex="-1">
-        <div class="modal-dialog">
-            <form method="POST" id="employeeForm" class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add / Edit Employee</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" name="employee_id" id="employee_id">
-                    <div class="mb-3">
-                        <label class="form-label">Name</label>
-                        <input type="text" name="name" id="name" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input type="email" name="email" id="email" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Department ID</label>
-                        <input type="number" name="department_id" id="department_id" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Position</label>
-                        <input type="text" name="position" id="position" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Hire Date</label>
-                        <input type="date" name="hire_date" id="hire_date" class="form-control" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
-                </div>
-            </form>
-        </div>
-    </div> -->
-    <!-- Add/Edit Employee Modal -->
     <div class="modal fade" id="employeeModal" tabindex="-1">
         <div class="modal-dialog">
             <form method="POST" id="employeeForm" class="modal-content">
@@ -207,14 +199,9 @@ if (isset($_GET['reject'])) {
                         <input type="date" name="hire_date" id="hire_date" class="form-control" required>
                     </div>
 
-                    <!-- Password Field (only shown when adding a new employee) -->
-                    <div class="mb-3" id="passwordField" style="display: none;">
-                        <label class="form-label">Password</label>
-                        <input type="password" name="password" id="password" class="form-control">
-                    </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" id="cancelBtn">Cancel</button>
                     <button type="submit" class="btn btn-primary">Save</button>
                 </div>
             </form>
@@ -257,31 +244,33 @@ if (isset($_GET['reject'])) {
 
                             $rejectBtn = $isActive
                                 ? ""
-                                : "<a href='?reject={$emp['employee_id']}' class='btn btn-danger btn-sm' onclick=\"return confirm('Reject and delete this employee?');\">Reject</a>";
+                                : "<button class='btn btn-danger btn-sm rejectBtn' data-id='" . $emp['employee_id'] . "'>Reject</button>";
+
 
                             echo "<tr style='text-align:center'>
-                <td>{$emp['name']}</td>
-                <td>{$emp['email']}</td>
-                <td>{$emp['dept_name']}</td>
-                <td>{$emp['position']}</td>
-                <td>{$emp['hire_date']}</td>
-                <td>
-                    $approveBtn
-                    $rejectBtn
-                </td>
-                <td>
-                    <button class='btn btn-primary btn-sm editBtn'
-                            data-id='{$emp['employee_id']}'
-                            data-name='{$emp['name']}'
-                            data-email='{$emp['email']}'
-                            data-department='{$emp['department_id']}'
-                            data-position='{$emp['position']}'
-                            data-date='{$emp['hire_date']}'>
-                        Edit
-                    </button>
-                    <a href='?delete={$emp['employee_id']}' class='btn btn-danger btn-sm' onclick='return confirm('Delete this employee?');'>Delete</a>
-                </td>
-            </tr>";
+    <td>{$emp['name']}</td>
+    <td>{$emp['email']}</td>
+    <td>{$emp['dept_name']}</td>
+    <td>{$emp['position']}</td>
+    <td>{$emp['hire_date']}</td>
+    <td>" .
+                                ($isActive ? "<label class='form-label'>Approved</label>" : "<a href='?approve={$emp['employee_id']}' class='btn btn-success btn-sm'>Approve</a>
+    <button class='btn btn-danger btn-sm rejectBtn' data-id='{$emp['employee_id']}'>Reject</button>") .
+                                "</td>
+    <td>
+        <button class='btn btn-primary btn-sm editBtn'
+        data-id='{$emp['employee_id']}'
+        data-name='{$emp['name']}'
+        data-email='{$emp['email']}'
+        data-department='{$emp['department_id']}'
+        data-position='{$emp['position']}'
+        data-date='{$emp['hire_date']}'>
+    Edit
+</button>
+
+        <button class='btn btn-danger btn-sm deleteBtn' data-id='{$emp['employee_id']}'>Delete</button>
+    </td>
+</tr>";
                         }
                     } else {
                         echo "<tr><td colspan='6' class='text-center'>No pending approvals</td></tr>";
@@ -302,8 +291,20 @@ if (isset($_GET['reject'])) {
         </div>
     </div>
 
+    <!-- Confirm Toast -->
+    <div id="confirmToast" class="toast align-items-center text-bg-warning border-0 position-fixed bottom-0 end-0 m-3" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex justify-content-between">
+            <div class="toast-body fw-semibold" id="confirmToastMsg">Are you sure?</div>
+            <div class="d-flex align-items-center">
+                <a id="confirmToastYesBtn" href="#" class="btn btn-sm btn-light me-2">Yes</a>
+                <button type="button" class="btn btn-sm btn-outline-light me-2" data-bs-dismiss="toast">No</button>
+            </div>
+        </div>
+    </div>
+
+
     <footer class="text-center mt-auto py-3 text-muted small bottom-0">
-        &copy; <?= date("Y") ?> Employee Leave Portal
+        &copy; <?php echo date("Y"); ?> Employee Leave Portal
     </footer>
 
     <script>
@@ -316,9 +317,36 @@ if (isset($_GET['reject'])) {
                 pageLength: 5
             });
 
+            $('#cancelBtn').click(function(e) {
+                e.preventDefault();
+                $('#employeeModal').modal('hide'); // Just close the modal, don't submit the form
+            });
+
             // Show Toast after adding/editing employee
             const toastMessage = '<?= $_SESSION['toast']['msg'] ?? '' ?>';
             const toastClass = '<?= $_SESSION['toast']['class'] ?? '' ?>';
+
+            let confirmActionUrl = '#'; // temp storage
+
+            // Show custom confirm toast
+            function showConfirmToast(message, actionUrl) {
+                $('#confirmToastMsg').text(message);
+                $('#confirmToastYesBtn').attr('href', actionUrl);
+                const toast = new bootstrap.Toast(document.getElementById('confirmToast'));
+                toast.show();
+            }
+
+            // Handle Reject click
+            $(document).on('click', '.rejectBtn', function() {
+                const empId = $(this).data('id');
+                showConfirmToast('Reject and delete this employee?', '?reject=' + empId);
+            });
+
+            // Handle Delete click
+            $(document).on('click', '.deleteBtn', function() {
+                const empId = $(this).data('id');
+                showConfirmToast('Delete this employee permanently?', '?delete=' + empId);
+            });
 
             if (toastMessage) {
                 $('#toastBody').text(toastMessage);
@@ -334,32 +362,43 @@ if (isset($_GET['reject'])) {
             }
 
             // When the edit button is clicked
-            $('.editBtn').click(function() {
-                // Hide password field (since it's not needed for editing)
-                $('#passwordField').hide();
-                // Set modal fields with the current employee data
-                $('#employee_id').val($(this).data('id'));
-                $('#name').val($(this).data('name'));
-                $('#email').val($(this).data('email'));
-                $('#department_id').val($(this).data('department'));
-                $('#position').val($(this).data('position'));
-                $('#hire_date').val($(this).data('date'));
-                // Show the modal
-                $('#employeeModal').modal('show');
+            $(document).ready(function() {
+                // When the edit button is clicked
+                $(document).on('click', '.editBtn', function() {
+                    const empId = $(this).data('id');
+                    console.log("Editing employee with ID:", empId); // This will now work for dynamically added elements.
+
+                    // Check if the employee ID is valid
+                    if (!empId) {
+                        console.error("Employee ID is missing.");
+                        return; // Prevent further action
+                    }
+
+                    // Populate the modal form
+                    $('#employee_id').val(empId);
+                    $('#name').val($(this).data('name'));
+                    $('#email').val($(this).data('email'));
+                    $('#department_id').val($(this).data('department'));
+                    $('#position').val($(this).data('position'));
+                    $('#hire_date').val($(this).data('date'));
+
+                    // Show the modal for editing
+                    $('#employeeModal').modal('show');
+                });
+
             });
 
+
+            // When the "Add Employee" button is clicked
             // When the "Add Employee" button is clicked
             $('#addBtn').click(function() {
                 // Clear the modal fields (if any)
-                $('#employeeForm')[0].reset();
-                // Show password field for adding a new employee
-                $('#passwordField').attr('required');
-                $('#passwordField').show();
-                // Make sure to hide the password field in the modal (if any)
-                $('#employee_id').val('');
-                // Show the modal
+                $('#employeeForm')[0].reset(); // Reset all fields to their default state
+                $('#employee_id').val(''); // Make sure employee_id is empty for new employee
+                // Show the modal for adding
                 $('#employeeModal').modal('show');
             });
+
         });
     </script>
 
