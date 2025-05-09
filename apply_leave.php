@@ -11,35 +11,49 @@ $userId = $_SESSION['user_id'];
 $statusMessage = '';
 $redirectTo = '';
 
-// Fetch only valid leave types
+// Fetch valid leave types
 $types = $conn->query("SELECT * FROM Leave_Types WHERE leave_type_id IN (1,2,3)");
+
+function countWeekdays($start, $end)
+{
+  $start = new DateTime($start);
+  $end = new DateTime($end);
+  $count = 0;
+  while ($start <= $end) {
+    if (!in_array($start->format('N'), [6, 7])) {
+      $count++;
+    }
+    $start->modify('+1 day');
+  }
+  return $count;
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $leave_type_id = (int)$_POST['leave_type'];
-  $start_date    = $_POST['start_date'];
-  $end_date      = $_POST['end_date'];
+  $range = explode(' to ', $_POST['leave_range']);
+  $start_date = trim($range[0] ?? '');
+  $end_date   = isset($range[1]) ? trim($range[1]) : $start_date; // fallback to start_date if only one date selected
   $reason        = $_POST['reason'];
-  // Read action rather than separate button names
-  $status = in_array($_POST['action'], ['draft', 'pending']) ? $_POST['action'] : 'draft';
+  $status        = in_array($_POST['action'], ['draft', 'pending']) ? $_POST['action'] : 'draft';
 
-  $stmt = $conn->prepare("
+  if (countWeekdays($start_date, $end_date) > 3) {
+    $statusMessage = 'You can only apply for a maximum of 3 working (non-weekend) days.';
+    $redirectTo = 'user_dashboard.php';
+  } else {
+    $stmt = $conn->prepare("
       INSERT INTO Leave_Requests
         (employee_id, leave_type_id, start_date, end_date, reason, status, requested_at)
       VALUES (?, ?, ?, ?, ?, ?, NOW())
     ");
-  $stmt->bind_param("iissss", $userId, $leave_type_id, $start_date, $end_date, $reason, $status);
+    $stmt->bind_param("iissss", $userId, $leave_type_id, $start_date, $end_date, $reason, $status);
 
-  if ($stmt->execute()) {
-    if ($status === 'pending') {
-      $statusMessage = 'Leave submitted successfully.';
-      $redirectTo = 'user_dashboard.php';
+    if ($stmt->execute()) {
+      $statusMessage = $status === 'pending' ? 'Leave submitted successfully.' : 'Leave saved as draft successfully.';
+      $redirectTo = $status === 'pending' ? 'user_dashboard.php' : 'drafts.php';
     } else {
-      $statusMessage = 'Leave saved as draft successfully.';
-      $redirectTo = 'drafts.php';
+      $statusMessage = 'Error: ' . $stmt->error;
+      $redirectTo = 'user_dashboard.php';
     }
-  } else {
-    $statusMessage = 'Error: ' . $stmt->error;
-    $redirectTo = 'user_dashboard.php'; // In case of error, we can redirect to the dashboard or error page.
   }
 }
 ?>
@@ -59,7 +73,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
               </div>
             </div>
-
             <script>
               setTimeout(function() {
                 window.location.href = '<?= $redirectTo ?>';
@@ -81,13 +94,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <div class="mb-3">
-              <label class="form-label">Start Date</label>
-              <input type="date" name="start_date" class="form-control" required>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">End Date</label>
-              <input type="date" name="end_date" class="form-control" required>
+              <label class="form-label">Leave Date Range</label>
+              <input type="text" name="leave_range" id="leave_range" class="form-control" required placeholder="Select date range">
+              <small class="text-muted">Note: Max 3 working days (Mon–Fri). Weekends are excluded automatically.</small>
             </div>
 
             <div class="mb-3">
@@ -109,3 +118,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
   </div>
 </main>
+
+<!-- Flatpickr -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+  flatpickr("#leave_range", {
+    mode: "range",
+    dateFormat: "Y-m-d",
+    onClose: function(selectedDates, dateStr, instance) {
+      if (selectedDates.length === 1) {
+        const onlyDate = selectedDates[0];
+        instance.setDate([onlyDate, onlyDate], true);
+      }
+    },
+    onChange: function(selectedDates, dateStr, instance) {
+      if (selectedDates.length === 2) {
+        const start = selectedDates[0];
+        const end = selectedDates[1];
+
+        let count = 0;
+        const current = new Date(start);
+        while (current <= end) {
+          const day = current.getDay();
+          if (day !== 0 && day !== 6) {
+            count++;
+          }
+          current.setDate(current.getDate() + 1);
+        }
+
+        if (count > 3) {
+          alert("You can only apply for a maximum of 3 working (Mon–Fri) days.");
+          instance.clear();
+        }
+      }
+    }
+  });
+</script>
