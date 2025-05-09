@@ -10,6 +10,17 @@ include 'includes/header.php';
 $userId = $_SESSION['user_id'];
 $name = $_SESSION['name'];
 
+// Fetch holidays from the database
+$holidays = [];
+$holidayQuery = "SELECT holiday_date FROM holidays"; // Assuming the table name is `holidays` and the column is `holiday_date`
+$holidayResult = $conn->query($holidayQuery);
+
+if ($holidayResult) {
+  while ($row = $holidayResult->fetch_assoc()) {
+    $holidays[] = $row['holiday_date']; // Populate the holidays array with holiday dates
+  }
+}
+
 // Fetch leave balances
 $balanceQuery = $conn->prepare("
   SELECT 
@@ -30,7 +41,6 @@ $balanceQuery = $conn->prepare("
 $balanceQuery->bind_param("i", $userId);
 $balanceQuery->execute();
 $balanceResult = $balanceQuery->get_result();
-
 
 // Fetch leave history
 $historyQuery = $conn->prepare("
@@ -55,12 +65,16 @@ while ($row = $balanceResult->fetch_assoc()) {
     ];
   }
 
-  // If start_date and end_date exist, count weekdays
+  // If start_date and end_date exist, count weekdays excluding weekends and holidays
   if ($row['start_date'] && $row['end_date']) {
     $start = new DateTime($row['start_date']);
     $end = new DateTime($row['end_date']);
     while ($start <= $end) {
-      if (!in_array($start->format('N'), [6, 7])) {
+      $dayOfWeek = $start->format('N'); // 1 = Monday, 7 = Sunday
+      $dateStr = $start->format('Y-m-d');
+
+      // Count only weekdays (Mon-Fri) that are not holidays
+      if ($dayOfWeek < 6 && !in_array($dateStr, $holidays)) {
         $leaveData[$typeId]['used']++;
       }
       $start->modify('+1 day');
@@ -68,7 +82,9 @@ while ($row = $balanceResult->fetch_assoc()) {
   }
 }
 
+// Now the $leaveData array will have the 'used' leave days excluding weekends and holidays.
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">

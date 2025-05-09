@@ -14,6 +14,18 @@ $redirectTo = '';
 // Fetch valid leave types
 $types = $conn->query("SELECT * FROM Leave_Types WHERE leave_type_id IN (1,2,3)");
 
+// Fetch holidays from the database
+$holidays = [];
+$holidayQuery = "SELECT holiday_date FROM holidays"; // Assuming the table name is `holidays` and the column is `holiday_date`
+$holidayResult = $conn->query($holidayQuery);
+
+if ($holidayResult) {
+  while ($row = $holidayResult->fetch_assoc()) {
+    $holidays[] = $row['holiday_date']; // Populate the holidays array with holiday dates
+  }
+}
+
+// Function to count weekdays excluding weekends
 function countWeekdays($start, $end)
 {
   $start = new DateTime($start);
@@ -36,23 +48,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $reason        = $_POST['reason'];
   $status        = in_array($_POST['action'], ['draft', 'pending']) ? $_POST['action'] : 'draft';
 
-  if (countWeekdays($start_date, $end_date) > 3) {
-    $statusMessage = 'You can only apply for a maximum of 3 working (non-weekend) days.';
-    $redirectTo = 'user_dashboard.php';
-  } else {
-    $stmt = $conn->prepare("
-      INSERT INTO Leave_Requests
-        (employee_id, leave_type_id, start_date, end_date, reason, status, requested_at)
-      VALUES (?, ?, ?, ?, ?, ?, NOW())
-    ");
-    $stmt->bind_param("iissss", $userId, $leave_type_id, $start_date, $end_date, $reason, $status);
+  // Count weekdays excluding weekends and holidays
+  $workingDays = 0;
+  $current = new DateTime($start_date);
 
-    if ($stmt->execute()) {
-      $statusMessage = $status === 'pending' ? 'Leave submitted successfully.' : 'Leave saved as draft successfully.';
-      $redirectTo = $status === 'pending' ? 'user_dashboard.php' : 'drafts.php';
-    } else {
-      $statusMessage = 'Error: ' . $stmt->error;
+  while ($current <= new DateTime($end_date)) {
+    $day = $current->format('N'); // 1 = Monday, 7 = Sunday
+    $dateStr = $current->format('Y-m-d');
+    if ($day < 6 && !in_array($dateStr, $holidays)) {
+      $workingDays++;
+    }
+    $current->modify('+1 day');
+  }
+
+  // Check if working days count is 0
+  if ($workingDays == 0) {
+    $statusMessage = 'You have selected 0 working days.';
+    $redirectTo = 'user_dashboard.php'; // Or any other page you want
+  } else {
+    if (countWeekdays($start_date, $end_date) > 3) {
+      $statusMessage = 'You can only apply for a maximum of 3 working (non-weekend) days.';
       $redirectTo = 'user_dashboard.php';
+    } else {
+      $stmt = $conn->prepare("
+        INSERT INTO Leave_Requests
+          (employee_id, leave_type_id, start_date, end_date, reason, status, requested_at)
+        VALUES (?, ?, ?, ?, ?, ?, NOW())
+      ");
+      $stmt->bind_param("iissss", $userId, $leave_type_id, $start_date, $end_date, $reason, $status);
+
+      if ($stmt->execute()) {
+        $statusMessage = $status === 'pending' ? 'Leave submitted successfully.' : 'Leave saved as draft successfully.';
+        $redirectTo = $status === 'pending' ? 'user_dashboard.php' : 'drafts.php';
+      } else {
+        $statusMessage = 'Error: ' . $stmt->error;
+        $redirectTo = 'user_dashboard.php';
+      }
     }
   }
 }
@@ -96,7 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="mb-3">
               <label class="form-label">Leave Date Range</label>
               <input type="text" name="leave_range" id="leave_range" class="form-control" required placeholder="Select date range">
-              <small class="text-muted">Note: Max 3 working days (Mon–Fri). Weekends are excluded automatically.</small>
+              <small class="text-muted">Note: Max 3 working days (Mon–Fri). Weekends and holidays are excluded automatically.</small>
             </div>
 
             <div class="mb-3">
@@ -123,15 +154,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
+  // Pass holidays from PHP to JavaScript
+  const holidays = <?= json_encode($holidays) ?>;
+
   flatpickr("#leave_range", {
     mode: "range",
     dateFormat: "Y-m-d",
-    onClose: function(selectedDates, dateStr, instance) {
-      if (selectedDates.length === 1) {
-        const onlyDate = selectedDates[0];
-        instance.setDate([onlyDate, onlyDate], true);
+    minDate: "today", // Prevent selection of past dates
+    maxDate: "2025-12-31", // Optional: Set maximum range limit
+
+    // Highlight holidays
+    onDayCreate: function(dObj, dStr, fp, dayElem) {
+      const date = dayElem.dateObj.toISOString().split('T')[0];
+      if (holidays.includes(date)) {
+        dayElem.classList.add('holiday');
+        dayElem.title = "Holiday";
       }
     },
+
+    // Validate on date range change
     onChange: function(selectedDates, dateStr, instance) {
       if (selectedDates.length === 2) {
         const start = selectedDates[0];
@@ -139,19 +180,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         let count = 0;
         const current = new Date(start);
+
         while (current <= end) {
-          const day = current.getDay();
-          if (day !== 0 && day !== 6) {
+          const day = current.getDay(); // 0 = Sun, 6 = Sat
+          const dateStr = current.toISOString().split('T')[0];
+          if (day !== 0 && day !== 6 && !holidays.includes(dateStr)) {
             count++;
           }
           current.setDate(current.getDate() + 1);
         }
 
+        if (count == 0) {
+          alert("You have selected 0 working days.");
+          instance.clear();
+        }
+
         if (count > 3) {
-          alert("You can only apply for a maximum of 3 working (Mon–Fri) days.");
+          alert("You can only apply for a maximum of 3 working days excluding weekends and holidays.");
           instance.clear();
         }
       }
     }
   });
 </script>
+
+<!-- Add Custom CSS for Holiday Highlighting -->
+<style>
+  .holiday {
+    background-color: #f8d7da !important;
+    /* Light red background */
+    color: #721c24 !important;
+  }
+</style>
