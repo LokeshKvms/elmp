@@ -5,10 +5,10 @@ include 'includes/header.php';
 
 // Only admin allowed
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-  header("Location: ../index.php");
+  header("Location: index.php");
   exit;
 }
-
+unset($_SESSION['isOk']);
 // Total employees (active)
 $resTotal = $conn->query("SELECT COUNT(*) AS total FROM Employees WHERE status='active'");
 $totalEmp = $resTotal->fetch_assoc()['total'];

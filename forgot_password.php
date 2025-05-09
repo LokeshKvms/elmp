@@ -4,6 +4,15 @@ include 'includes/db.php';
 require 'includes/mail.php';
 
 
+if (isset($_SESSION['role'])) {
+    if ($_SESSION['role'] === 'admin') {
+        header("Location: admin_dashboard.php");
+        exit;
+    } else if ($_SESSION['role'] === 'employee') {
+        header("Location: user_dashboard.php");
+        exit;
+    }
+}
 $showOtpField = false;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

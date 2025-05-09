@@ -3,7 +3,12 @@ session_start();
 include 'includes/db.php';
 
 if (!isset($_SESSION['reset_email'])) {
-    header("Location: login.php");
+    header("Location: index.php");
+    exit;
+}
+
+if (!isset($_SESSION['email']) || !isset($_SESSION['isOk'])) {
+    header("Location: index.php");
     exit;
 }
 

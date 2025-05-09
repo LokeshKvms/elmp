@@ -6,7 +6,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'employee') {
 }
 include 'includes/db.php';
 include 'includes/header.php';
-
+unset($_SESSION['isOk']);
 $userId = $_SESSION['user_id'];
 $name = $_SESSION['name'];
 
