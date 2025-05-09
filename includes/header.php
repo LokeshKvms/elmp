@@ -8,43 +8,48 @@ $dashboard = $role === 'admin' ? 'Admin Portal' : 'Employee Portal';
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&display=swap" rel="stylesheet">
 
 <style>
-#sidebar {
-height: 100vh;
-width: 250px;
-position: fixed;
-top: 0;
-left: -250px;
-background-color: #f8f9fa;
-transition: left 0.3s;
-z-index: 999;
-padding-top: 60px;
-}
+  body {
+    font-family: 'Rubik', sans-serif !important;
+  }
 
-#sidebar.active {
-left: 0;
-}
+  #sidebar {
+    height: 100vh;
+    width: 250px;
+    position: fixed;
+    top: 0;
+    left: -250px;
+    background-color: #f8f9fa;
+    transition: left 0.3s;
+    z-index: 999;
+    padding-top: 60px;
+  }
 
-.sidebar-link {
-padding: 10px 20px;
-display: block;
-color: #333;
-text-decoration: none;
-}
+  #sidebar.active {
+    left: 0;
+  }
 
-.sidebar-link:hover {
-background-color: #e9ecef;
-}
+  .sidebar-link {
+    padding: 10px 20px;
+    display: block;
+    color: #333;
+    text-decoration: none;
+  }
 
-#main-content {
-margin-left: 0;
-transition: margin-left 0.3s;
-}
+  .sidebar-link:hover {
+    background-color: #e9ecef;
+  }
 
-#main-content.shifted {
-margin-left: 250px;
-}
+  #main-content {
+    margin-left: 0;
+    transition: margin-left 0.3s;
+  }
+
+  #main-content.shifted {
+    margin-left: 250px;
+  }
 </style>
 
 <!-- Header -->
