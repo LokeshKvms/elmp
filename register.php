@@ -148,7 +148,7 @@ if (isset($_SESSION['role'])) {
         </div>
 
         <div class="d-flex justify-content-between">
-          <button name="register" class="btn btn-primary w-50 me-2" id="registerBtn" disabled>Register</button>
+          <button name="register" class="btn btn-light w-50 me-2" id="registerBtn" disabled>Register</button>
           <button type="button" onclick="clearForm()" class="btn btn-outline-light w-50 ms-2">Clear</button>
         </div>
       </form>

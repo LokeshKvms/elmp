@@ -213,7 +213,7 @@ if (isset($_POST['login'])) {
           </div>
         </div>
 
-        <button name="login" id="loginBtn" class="btn btn-primary w-100" disabled>Login</button>
+        <button name="login" id="loginBtn" class="btn btn-light w-100" disabled>Login</button>
       </form>
 
       <p class="text-center mt-3">
