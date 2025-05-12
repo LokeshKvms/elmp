@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_id'] = $user['employee_id'];
             $_SESSION['name'] = $user['name'];
             $_SESSION['role'] = ($email === 'admin@gmail.com') ? 'admin' : 'employee';
-
+            $_SESSION['login_time'] = time();
             $redirect = ($email === 'admin@gmail.com') ? 'admin_dashboard.php' : 'user_dashboard.php';
             header("Location: $redirect");
             exit;

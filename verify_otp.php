@@ -33,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $conn->prepare("UPDATE Employees SET otp = NULL, otp_expires = NULL WHERE email = ?");
                 $stmt->bind_param("s", $email);
                 $stmt->execute();
+                $_SESSION['login_time'] = time();
 
                 // Redirect to dashboard
                 if ($role === 1) {

@@ -1,5 +1,5 @@
 <?php
-if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 5)) {
+if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 3600)) {
     session_unset();
     session_destroy();
 

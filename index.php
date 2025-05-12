@@ -3,7 +3,6 @@ session_start();
 require 'includes/db.php';
 require 'includes/mail.php';
 
-
 if (isset($_SESSION['role'])) {
   if ($_SESSION['role'] === 'admin') {
     header("Location: admin_dashboard.php");
@@ -13,7 +12,84 @@ if (isset($_SESSION['role'])) {
     exit;
   }
 }
+
+if (isset($_POST['login'])) {
+  $recaptchaSecret = '6LeM1DYrAAAAAHRYy5S_x8rjEwy6RneNfYr3DHsM';
+  $recaptchaResponse = $_POST['g-recaptcha-response'];
+
+  $verifyUrl = "https://www.google.com/recaptcha/api/siteverify?secret=$recaptchaSecret&response=$recaptchaResponse";
+  $verifyResponse = file_get_contents($verifyUrl);
+  $responseData = json_decode($verifyResponse);
+
+  if (!$responseData->success) {
+    $_SESSION['error'] = 'Please complete the CAPTCHA.';
+    header("Location: index.php");
+    exit;
+  }
+
+  $email = $_POST['email'];
+  $password = $_POST['password'];
+  $role = $_POST['role'];
+  $stmt = $conn->prepare("SELECT * FROM Employees WHERE email = ?");
+  $stmt->bind_param("s", $email);
+  $stmt->execute();
+  $result = $stmt->get_result();
+
+  if ($result->num_rows === 1) {
+    $user = $result->fetch_assoc();
+
+    if ($role === 'employee' && $email === 'admin@gmail.com') {
+      $_SESSION['error'] = 'User not found.';
+      header("Location: index.php");
+      exit;
+    } else if ($password === $user['password']) {
+      if ($role === 'admin' && $email === 'admin@gmail.com') {
+        $_SESSION['user_id'] = $user['employee_id'];
+        $_SESSION['name'] = $user['name'];
+        $_SESSION['role'] = 'admin';
+        header("Location: admin_dashboard.php");
+        exit;
+      } else if ($user['status'] === 'active') {
+        $_SESSION['user_id'] = $user['employee_id'];
+        $_SESSION['name'] = $user['name'];
+        $_SESSION['role'] = 'employee';
+        $_SESSION['email'] = $user['email'];
+        $_SESSION['isOk'] = 'yes';
+
+        $otp = rand(100000, 999999);
+        $otpExpires = time() + 60;
+
+        $updateStmt = $conn->prepare("UPDATE Employees SET otp = ?, otp_expires = ? WHERE email = ?");
+        $updateStmt->bind_param("iis", $otp, $otpExpires, $email);
+        $updateStmt->execute();
+
+        try {
+          sendmail($email, 'Your OTP for Login', "<h3>Your new OTP is: <strong>$otp</strong></h3>");
+          header("Location: verify_otp.php");
+          exit;
+        } catch (Exception $e) {
+          $_SESSION['error'] = 'OTP mail failed: ' . $mail->ErrorInfo;
+          header("Location: index.php");
+          exit;
+        }
+      } else {
+        $_SESSION['error'] = 'Account pending approval by manager.';
+        header("Location: index.php");
+        exit;
+      }
+    } else {
+      $_SESSION['error'] = 'Incorrect password.';
+      header("Location: index.php");
+      exit;
+    }
+  } else {
+    $_SESSION['error'] = 'User not found.';
+    header("Location: index.php");
+    exit;
+  }
+}
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -44,8 +120,6 @@ if (isset($_SESSION['role'])) {
       }
     }
 
-
-
     function showToast(message, type) {
       const toastElement = document.createElement('div');
       toastElement.classList.add('toast', 'position-fixed', 'top-0', 'end-0', 'm-2', 'fade', 'show');
@@ -65,6 +139,23 @@ if (isset($_SESSION['role'])) {
         toastElement.classList.remove('show');
         setTimeout(() => toastElement.remove(), 300);
       }, 3000);
+    }
+  </script>
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    function enableLogin() {
+      $("#loginBtn").removeAttr("disabled");
+      const recaptchaResponse = grecaptcha.getResponse();
+      console.log(recaptchaResponse); // Add this line to check the response
+
+      if (recaptchaResponse.length === 0) {
+        console.log('Captcha not completed!');
+        $("#loginBtn").attr("disabled", "disabled"); // Disable the button if CAPTCHA is not verified
+        return;
+      }
+
+      console.log('Captcha verified');
     }
   </script>
   <style>
@@ -116,72 +207,26 @@ if (isset($_SESSION['role'])) {
           <div class="mb-3 text-start ms-3">
             <a href="forgot_password.php" class="text-info">Forgot Password ?</a>
           </div>
+
+          <div class="mb-3 text-center d-flex justify-content-center">
+            <div class="g-recaptcha" data-sitekey="6LeM1DYrAAAAADr-eWGoIv3aQBXt13clCX_mnD_H" data-callback="enableLogin" data-theme="dark"></div>
+          </div>
         </div>
 
-        <button name="login" class="btn btn-primary w-100">Login</button>
+        <button name="login" id="loginBtn" class="btn btn-primary w-100" disabled>Login</button>
       </form>
 
       <p class="text-center mt-3">
         New user? <a href="register.php" class="text-info">Register here</a>
       </p>
-
-      <?php
-      if (isset($_POST['login'])) {
-        $email = $_POST['email'];
-        $password = $_POST['password'];
-        $role = $_POST['role'];
-        $stmt = $conn->prepare("SELECT * FROM Employees WHERE email = ?");
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        if ($result->num_rows === 1) {
-          $user = $result->fetch_assoc();
-
-          if ($role === 'employee' && $email === 'admin@gmail.com') {
-            echo "<script>showToast('User not found.', 'danger');</script>";
-          } else if ($password === $user['password']) {
-            if ($role === 'admin' && $email === 'admin@gmail.com') {
-              $_SESSION['user_id'] = $user['employee_id'];
-              $_SESSION['name'] = $user['name'];
-              $_SESSION['role'] = 'admin';
-              $_SESSION['login_time'] = time();
-              header("Location: admin_dashboard.php");
-              exit;
-            } else if ($user['status'] === 'active') {
-              $_SESSION['user_id'] = $user['employee_id'];
-              $_SESSION['name'] = $user['name'];
-              $_SESSION['role'] = 'employee';
-              $_SESSION['email'] = $user['email'];
-              $_SESSION['isOk'] = 'yes';
-              $start = microtime(true);
-
-              $otp = rand(100000, 999999);
-              $otpExpires = time() + 60;
-
-              $updateStmt = $conn->prepare("UPDATE Employees SET otp = ?, otp_expires = ? WHERE email = ?");
-              $updateStmt->bind_param("iis", $otp, $otpExpires, $email);
-              $updateStmt->execute();
-              try {
-                sendmail($email, 'Your OTP for Login', "<h3>Your new OTP is: <strong>$otp</strong></h3>");
-                header("Location: verify_otp.php");
-                exit;
-              } catch (Exception $e) {
-                echo "<script>showToast('OTP mail failed: " . $mail->ErrorInfo . "', 'danger');</script>";
-              }
-            } else {
-              echo "<script>showToast('Account pending approval by manager.', 'warning');</script>";
-            }
-          } else {
-            echo "<script>showToast('Incorrect password.', 'danger');</script>";
-          }
-        } else {  
-          echo "<script>showToast('User not found.', 'danger');</script>";
-        }
-      }
-      ?>
     </div>
   </div>
+  <?php
+  if (isset($_SESSION['error'])) {
+    echo "<script>showToast('" . $_SESSION['error'] . "', 'danger');</script>";
+    unset($_SESSION['error']);
+  }
+  ?>
 
   <footer class="text-center mt-4 py-3 text-muted small fixed-bottom">
     &copy; <?= date("Y") ?> Employee Leave Portal

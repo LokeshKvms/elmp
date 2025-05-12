@@ -115,6 +115,16 @@ $dashboard = $role === 'admin' ? 'Admin Portal' : 'Employee Portal';
     border: 1px solid #6c757d;
   }
 </style>
+<script>
+  // Set same timeout as PHP (in milliseconds)
+  const timeout = 3600 * 1000;
+
+  setTimeout(() => {
+    alert("Session expired. You will be logged out.");
+    window.location.href = "logout.php";
+  }, timeout);
+</script>
+
 
 
 <!-- Header -->
