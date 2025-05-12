@@ -4,7 +4,7 @@ include 'includes/db.php';
 
 // Redirect if not admin
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../index.php");
+    header("Location: index.php");
     exit;
 }
 
@@ -188,6 +188,14 @@ include 'includes/header.php';
     ?>
 
     <h3 class="mb-3 mt-5">Leave Requests</h3>
+    <div class="d-flex justify-content-end align-items-center mb-3">
+        <select id="statusFilter" class="form-select form-select-sm" style="width: auto;background-color:#000 !important;color:white !important;">
+            <option value="">Filter by Status</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="pending">Pending</option>
+        </select>
+    </div>
 
     <table id="leaveTable" class="table text-center">
         <thead>
@@ -236,22 +244,56 @@ include 'includes/header.php';
 
     <!-- Bootstrap & DataTables Scripts -->
     <script>
-        $('#leaveTable').DataTable({
-            lengthChange: false,
-            dom: 'Bfrtip',
-            buttons: [{
-                extend: 'excel',
-                text: 'Export to Excel'
-            }]
+        if (!$.fn.dataTable.isDataTable('#theTable')) {
+            $('#theTable').DataTable({
+                lengthChange: false,
+                dom: 'Bfrtip',
+                buttons: [{
+                    extend: 'excel',
+                    text: 'Export to Excel'
+                }],
+                drawCallback: function() {
+                    $('#theTable td').addClass('bg-transparent');
+                }
+            });
+        }
+
+        // Initialize the second table only if it hasn't been initialized
+        if (!$.fn.dataTable.isDataTable('#leaveTable')) {
+            $('#leaveTable').DataTable({
+                lengthChange: false,
+                dom: 'Bfrtip',
+                buttons: [{
+                    extend: 'excel',
+                    text: 'Export to Excel'
+                }],
+                drawCallback: function() {
+                    $('#leaveTable td').addClass('bg-transparent');
+                }
+            });
+        }
+
+        // Status filter - Apply filtering on status change
+        $('#statusFilter').on('change', function() {
+            var selectedStatus = this.value.toLowerCase(); // Get the selected status
+            var table = $('#leaveTable').DataTable();
+            if (selectedStatus) {
+                // Filter by status (column index 7 is the Status column)
+                table.column(7).search(selectedStatus).draw();
+            } else {
+                // Clear the filter if the default option is selected
+                table.column(7).search('').draw();
+            }
         });
-        $('#theTable').DataTable({
-            lengthChange: false,
-            dom: 'Bfrtip',
-            buttons: [{
-                extend: 'excel',
-                text: 'Export to Excel'
-            }]
-        });
+
+        // Initialize Toast if it exists
+        const toastEl = document.querySelector('.toast');
+        if (toastEl) {
+            const toast = new bootstrap.Toast(toastEl, {
+                delay: 2000
+            });
+            toast.show();
+        }
 
         document.addEventListener("DOMContentLoaded", function() {
             const toastEl = document.querySelector('.toast');
@@ -262,8 +304,6 @@ include 'includes/header.php';
                 toast.show();
             }
         });
-
-        $('td').addClass('bg-transparent');
     </script>
 </body>
 
