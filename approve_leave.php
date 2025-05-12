@@ -190,7 +190,6 @@ include 'includes/header.php';
             <option value="">Filter by Status</option>
             <option value="approved">Approved</option>
             <option value="rejected">Rejected</option>
-            <option value="pending">Pending</option>
         </select>
     </div>
 
