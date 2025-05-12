@@ -2,12 +2,17 @@
 session_start();
 include 'includes/db.php';
 
-if (!isset($_SESSION['reset_email'])) {
-    header("Location: index.php");
-    exit;
+if (isset($_SESSION['role'])) {
+    if ($_SESSION['role'] === 'admin') {
+        header("Location: admin_dashboard.php");
+        exit;
+    } elseif ($_SESSION['role'] === 'employee') {
+        header("Location: user_dashboard.php");
+        exit;
+    }
 }
 
-if (!isset($_SESSION['email']) || !isset($_SESSION['isOk'])) {
+if (!isset($_SESSION['forget'])) {
     header("Location: index.php");
     exit;
 }
@@ -65,19 +70,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </script>
 </head>
 
-<body class="bg-light d-flex align-items-center justify-content-center min-vh-100">
-    <div class="card p-4 shadow" style="width: 100%; max-width: 400px;">
+<body class="d-flex align-items-center justify-content-center min-vh-100" style="background-image: radial-gradient(circle, white, #707070);">
+    <div class="bg-dark text-white card p-4 shadow" style="width: 100%; max-width: 400px;">
         <h4 class="mb-3 text-center">Reset Password</h4>
         <form method="POST">
             <div class="mb-3">
-                <label>New Password:</label>
+                <label class="form-label">New Password:</label>
                 <input type="password" name="new_password" class="form-control" required>
             </div>
             <div class="mb-3">
-                <label>Confirm Password:</label>
+                <label class="form-label">Confirm Password:</label>
                 <input type="password" name="confirm_password" class="form-control" required>
             </div>
-            <button type="submit" class="btn btn-success w-100">Reset Password</button>
+            <button type="submit" class="my-3 btn btn-success w-100">Reset Password</button>
         </form>
     </div>
 </body>

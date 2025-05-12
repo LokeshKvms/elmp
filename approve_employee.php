@@ -163,17 +163,23 @@ if (isset($_GET['reject'])) {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
     <style>
-        .dataTables_filter {
-            margin-bottom: 1rem !important;
-        }
+    .dataTables_filter {
+        margin-bottom: 1rem !important;
+    }
 
-        #employeeTable thead th {
-            text-align: center !important;
-        }
+    #employeeTable thead th {
+        text-align: center !important;
+    }
 
-        .d-flex.justify-content-between {
-            align-items: center;
-        }
+    #employeeTable tbody tr:nth-child(odd) {
+        background-color: #191c24 !important;
+        color: #fff;
+    }
+
+    .d-flex.justify-content-between {
+        align-items: center;
+    }
+
     </style>
 </head>
 
@@ -182,7 +188,7 @@ if (isset($_GET['reject'])) {
     <div class="modal fade" id="employeeModal" tabindex="-1">
         <div class="modal-dialog">
             <form method="POST" id="employeeForm" class="modal-content bg-dark px-3">
-                <div class="modal-header">
+                <div class="modal-header mt-2">
                     <h5 class="modal-title">Add / Edit Employee</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" style="background-color:white !important;"></button>
                 </div>
@@ -236,7 +242,7 @@ if (isset($_GET['reject'])) {
                 <button id="addBtn" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#employeeModal">Add Employee</button>
             </div>
 
-            <table id="employeeTable" class="table table-bordered table-striped my-3">
+            <table id="employeeTable" class="table table-striped my-3">
                 <thead class="table-dark text-center">
                     <tr>
                         <th>Name</th>
@@ -268,16 +274,16 @@ if (isset($_GET['reject'])) {
 
 
                             echo "<tr style='text-align:center'>
-    <td>{$emp['name']}</td>
-    <td>{$emp['email']}</td>
-    <td>{$emp['dept_name']}</td>
-    <td>{$emp['position']}</td>
-    <td>{$emp['hire_date']}</td>
-    <td>" .
+    <td class='text-light bg-transparent'>{$emp['name']}</td>
+    <td class='text-light bg-transparent'>{$emp['email']}</td>
+    <td class='text-light bg-transparent'>{$emp['dept_name']}</td>
+    <td class='text-light bg-transparent'>{$emp['position']}</td>
+    <td class='text-light bg-transparent'>{$emp['hire_date']}</td>
+    <td class='text-light bg-transparent'>" .
                                 ($isActive ? "<label class='form-label'>Approved</label>" : "<a href='?approve={$emp['employee_id']}' class='btn btn-success btn-sm'>Approve</a>
     <button class='btn btn-danger btn-sm rejectBtn' data-id='{$emp['employee_id']}'>Reject</button>") .
                                 "</td>
-    <td>
+    <td class='text-light bg-transparent'>
         <button class='btn btn-warning px-3 btn-sm editBtn'
         data-id='{$emp['employee_id']}'
         data-name='{$emp['name']}'

@@ -14,7 +14,7 @@ $manager_id = $_SESSION['user_id'];
 if (isset($_GET['action'], $_GET['id'])) {
     $action = $_GET['action'];
     $req_id = (int)$_GET['id'];
-    
+
     // Fetch the specific request
     $reqRes = $conn->query("SELECT * FROM Leave_Requests WHERE request_id = $req_id");
     if ($reqRes && $reqRes->num_rows === 1) {
@@ -28,7 +28,7 @@ if (isset($_GET['action'], $_GET['id'])) {
                  SET status='$status', reviewed_at='$reviewed_at', reviewed_by=$manager_id
                  WHERE request_id=$req_id"
             );
-            
+
             // After the approval/rejection logic:
             if ($upd) {
                 if ($status === 'approved') {
@@ -50,8 +50,7 @@ if (isset($_GET['action'], $_GET['id'])) {
             } else {
                 $_SESSION['toast_message'] = ['message' => 'Failed to update leave request.', 'type' => 'danger'];
             }
-            
-            // Redirect to avoid resubmission of data on page refresh
+
             header("Location: approve_leave.php");
             exit;
         }
@@ -98,6 +97,15 @@ include 'includes/header.php';
         thead th {
             text-align: center !important;
         }
+
+        td {
+            color: white !important;
+        }
+
+        .table tbody tr:nth-child(odd) {
+            background-color: #191c24 !important;
+            color: #fff;
+        }
     </style>
 </head>
 
@@ -117,7 +125,7 @@ include 'includes/header.php';
         <?php unset($_SESSION['toast_message']); ?>
     <?php endif; ?>
 
-    <h3 class="mb-3 pt-3">Pending Leave Requests</h3>
+    <h3 class="mb-3 pt-4">Pending Leave Requests</h3>
 
     <?php
     $sql = "
@@ -133,7 +141,7 @@ include 'includes/header.php';
     }
     ?>
 
-    <table id="theTable" class="table table-bordered text-center">
+    <table id="theTable" class="table text-center">
         <thead>
             <tr class="table-dark">
                 <th>Employee</th>
@@ -181,7 +189,7 @@ include 'includes/header.php';
 
     <h3 class="mb-3 mt-5">Leave Requests</h3>
 
-    <table id="leaveTable" class="table table-bordered text-center">
+    <table id="leaveTable" class="table text-center">
         <thead>
             <tr class="table-dark">
                 <th>Employee</th>
@@ -254,6 +262,8 @@ include 'includes/header.php';
                 toast.show();
             }
         });
+
+        $('td').addClass('bg-transparent');
     </script>
 </body>
 

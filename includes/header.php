@@ -72,6 +72,53 @@ $dashboard = $role === 'admin' ? 'Admin Portal' : 'Employee Portal';
     background-color: #343a40;
     color: #fff;
   }
+
+  .dt-button.buttons-excel {
+    background-color: #191c24 !important;
+    /* Bootstrap gray */
+    color: white !important;
+    border: none !important;
+    padding: 6px 12px;
+    border-radius: 4px;
+  }
+
+  .dt-button.buttons-excel:hover {
+    background-color: #191c24 !important;
+    /* Darker gray on hover */
+    color: white !important;
+  }
+
+  /* Pagination buttons */
+  .dataTables_wrapper .dataTables_paginate .paginate_button {
+    background-color: #191c24 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 3px;
+    margin: 0 2px;
+    padding: 5px 10px;
+  }
+
+  .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background-color: #191c24 !important;
+    color: white !important;
+  }
+
+  .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background-color: #191c24 !important;
+    color: white !important;
+  }
+
+  .dataTables_filter input {
+    color: white !important;
+    /* background-color: #343a40 !important; */
+    border: 1px solid #6c757d;
+  }
+
+  /* .flatpickr-calendar {
+    background-color: #121212 !important;
+    color: #fff !important;
+    border: 1px solid #333;
+  } */
 </style>
 <!-- Header -->
 <header class="text-white py-3 px-3 d-flex justify-content-between align-items-center fixed-top border-bottom border-dark border-3" style="z-index:1000;background-color:#191c24">

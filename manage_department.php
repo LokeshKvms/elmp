@@ -89,6 +89,10 @@ include 'includes/header.php';
         #theTable thead th {
             text-align: center !important;
         }
+
+        #theTable tbody tr:nth-child(odd) {
+            background-color: #191c24;
+        }
     </style>
 </head>
 
@@ -147,7 +151,7 @@ include 'includes/header.php';
             <?php endif; ?>
         </div>
 
-        <table id="theTable" class="table custom-table">
+        <table id="theTable" class="table text-center">
             <thead class="table-dark">
                 <tr>
                     <th>S.No</th>
@@ -165,10 +169,10 @@ include 'includes/header.php';
                     while ($row = $result->fetch_assoc()):
                 ?>
                         <tr>
-                            <td><?= $i++ ?></td>
-                            <td><?= $row['name'] ?></td>
+                            <td class='text-light bg-transparent'><?= $i++ ?></td>
+                            <td class='text-light bg-transparent'><?= $row['name'] ?></td>
                             <?php if ($_SESSION['role'] === 'admin'): ?>
-                                <td>
+                                <td class='text-light bg-transparent'>
                                     <button class="btn btn-sm btn-warning px-3 mx-1" onclick='editDepartment(<?= json_encode($row) ?>)'>Edit</button>
                                     <button class="btn btn-sm btn-danger mx-1" onclick="confirmDelete(<?= $row['department_id'] ?>)">Delete</button>
                                 </td>

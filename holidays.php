@@ -84,13 +84,11 @@
     <style>
       #holidaysTable tbody tr:nth-child(odd) {
         background-color: #191c24 !important;
-        /* dark grey */
         color: #fff;
       }
 
       #holidaysTable thead td {
         background-color: #191c24 !important;
-        /* dark grey */
         color: #fff;
       }
     </style>

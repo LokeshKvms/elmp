@@ -51,7 +51,7 @@ function countWeekdays($start, $end)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_id'])) {
   $reqId = (int)$_POST['request_id'];
   $leave_type_id = (int)$_POST['leave_type'];
-  
+
   // Ensure leave_range is valid before processing
   if (!empty($_POST['leave_range'])) {
     $range = explode('to', $_POST['leave_range']);
@@ -60,17 +60,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_id'])) {
   } else {
     $start_date = $end_date = ''; // Fallback if no date is selected
   }
-  
+
   $reason = $_POST['reason'];
   $status = in_array($_POST['action'], ['draft', 'pending']) ? $_POST['action'] : 'draft';
-  
+
   // Update the draft in the database
   $upd = $conn->prepare("UPDATE Leave_Requests SET leave_type_id = ?, start_date = ?, end_date = ?, reason = ?, status = ? WHERE request_id = ? AND employee_id = ?");
   $upd->bind_param("issssii", $leave_type_id, $start_date, $end_date, $reason, $status, $reqId, $userId);
   $upd->execute();
-  
+
   $message = "Draft " . ($status === 'pending' ? "submitted" : "updated") . " successfully.";
-  
+
   // Set redirection based on the action
   $redirectTo = ($status === 'pending') ? 'user_dashboard.php' : 'drafts.php';
 }
@@ -109,13 +109,19 @@ include 'includes/header.php';
   <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
   <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  
 
   <style>
     .holiday {
       background-color: #f8d7da !important;
       color: #721c24 !important;
+    }
+
+    #theTable tbody tr:nth-child(odd) {
+      background-color: #191c24 !important;
+      color: #fff;
     }
   </style>
 </head>
@@ -128,8 +134,8 @@ include 'includes/header.php';
 
     <?php if (!$editing): ?>
       <?php if ($draftList->num_rows): ?>
-        <table id="theTable" class="table table-striped table-bordered text-center">
-          <thead>
+        <table id="theTable" class="table text-center">
+          <thead class="table-dark">
             <tr>
               <th>S.No</th>
               <th>Type</th>
@@ -149,7 +155,7 @@ include 'includes/header.php';
                 <td><?= $d['end_date'] ?></td>
                 <td><?= $d['reason'] ?></td>
                 <td class="d-flex justify-content-center">
-                  <a href="?edit=<?= $d['request_id'] ?>" class="btn btn-sm btn-primary px-3 me-2">Edit</a>
+                  <a href="?edit=<?= $d['request_id'] ?>" class="btn btn-sm btn-warning px-3 me-2">Edit</a>
                   <a href="?delete=<?= $d['request_id'] ?>" class="btn btn-sm btn-danger ms-2" onclick="return confirm('Delete this draft?');">Delete</a>
                 </td>
               </tr>
@@ -163,8 +169,8 @@ include 'includes/header.php';
     <?php endif; ?>
 
     <?php if ($editing): ?>
-      <div class="card p-4 mb-4">
-        <h4>Edit Draft</h4>
+      <div class="card bg-dark text-white p-4 px-5">
+        <h4 class="mb-3">Edit Draft</h4>
         <form method="post">
           <input type="hidden" name="request_id" value="<?= $draft['request_id'] ?>">
           <div class="mb-3">
@@ -179,8 +185,8 @@ include 'includes/header.php';
           </div>
           <div class="mb-3">
             <label class="form-label">Leave Date Range</label>
-            <input type="text" name="leave_range" id="leave_range" class="form-control" required placeholder="Select date range">
-            <small class="text-muted">Note: Max 3 working days (Mon–Fri). Weekends and holidays are excluded automatically.</small>
+            <input type="text" name="leave_range" id="leave_range" class="form-control" required placeholder="Select date range" value="<?= htmlspecialchars($draft['start_date'] . ($draft['end_date'] !== $draft['start_date'] ? ' to ' . $draft['end_date'] : '')) ?>">
+            <small class="text-muted form-text">Note: Max 3 working days (Mon–Fri). Weekends and holidays are excluded automatically.</small>
           </div>
           <div class="mb-3">
             <label class="form-label">Reason</label>
@@ -188,7 +194,7 @@ include 'includes/header.php';
           </div>
           <div class="d-flex justify-content-between">
             <div class="d-flex justify-content-start gap-1">
-              <button type="submit" name="action" value="draft" class="btn btn-secondary">Save as Draft</button>
+              <button type="submit" name="action" value="draft" class="btn btn-secondary me-2">Save as Draft</button>
               <a href="?delete=<?= $draft['request_id'] ?>" class="btn btn-danger" onclick="return confirm('Delete this draft permanently?');">Delete Draft</a>
             </div>
             <button type="submit" name="action" value="pending" class="btn btn-primary">Submit for Approval</button>
@@ -203,6 +209,9 @@ include 'includes/header.php';
   </main>
 
   <script>
+    $('td').addClass('bg-transparent text-light');
+    $('th').addClass('text-center');
+    $('input,select,textarea').addClass('bg-dark text-white');
     $(document).ready(function() {
       $('#theTable').DataTable({
         lengthChange: false,

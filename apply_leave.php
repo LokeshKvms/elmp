@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   // Count weekdays excluding weekends and holidays
   $workingDays = 0;
   $current = new DateTime($start_date);
-  
+
   while ($current <= new DateTime($end_date)) {
     $day = $current->format('N'); // 1 = Monday, 7 = Sunday
     $dateStr = $current->format('Y-m-d');
@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     $current->modify('+1 day');
   }
-  
+
   // Check if working days count is 0
   if ($workingDays == 0) {
     $statusMessage = 'You have selected 0 working days.';
@@ -75,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           VALUES (?, ?, ?, ?, ?, ?, NOW())
       ");
       $stmt->bind_param("iissss", $userId, $leave_type_id, $start_date, $end_date, $reason, $status);
-      
+
       if ($stmt->execute()) {
         $statusMessage = $status === 'pending' ? 'Leave submitted successfully.' : 'Leave saved as draft successfully.';
         $redirectTo = $status === 'pending' ? 'user_dashboard.php' : 'drafts.php';
@@ -92,9 +92,9 @@ include 'includes/header.php';
 <main class="flex-grow-1 container py-4">
   <div class="row justify-content-center">
     <div class="col-12 col-md-10 col-lg-8">
-      <div class="card shadow-sm border-1 p-4">
-        <div class="card-body">
-          <h2 class="card-title mb-4">Apply for Leave</h2>
+      <div class="card shadow-sm border-1 p-4 px-5" style="background-color: #191c24;">
+        <div class="card-body text-white">
+          <h2 class="card-title text-white mb-4">Apply for Leave</h2>
 
           <?php if (!empty($statusMessage)): ?>
             <div class="position-fixed top-0 end-0 p-3 m-3" style="z-index: 1100;">
@@ -114,7 +114,7 @@ include 'includes/header.php';
           <form method="post">
             <div class="mb-3">
               <label class="form-label">Leave Type</label>
-              <select name="leave_type" class="form-select" required>
+              <select name="leave_type" class="form-select text-white bg-dark" required>
                 <option value="">-- Select --</option>
                 <?php while ($type = $types->fetch_assoc()): ?>
                   <option value="<?= $type['leave_type_id'] ?>">
@@ -126,13 +126,13 @@ include 'includes/header.php';
 
             <div class="mb-3">
               <label class="form-label">Leave Date Range</label>
-              <input type="text" name="leave_range" id="leave_range" class="form-control" required placeholder="Select date range">
-              <small class="text-muted">Note: Max 3 working days (Mon–Fri). Weekends and holidays are excluded automatically.</small>
+              <input type="text" name="leave_range" id="leave_range" class="form-control mb-1 text-white bg-dark" required placeholder="Select date range">
+              <small class="text-secondary form-text">Note: Max 3 working days (Mon–Fri). Weekends and holidays are excluded automatically.</small>
             </div>
 
             <div class="mb-3">
               <label class="form-label">Reason</label>
-              <textarea name="reason" class="form-control" rows="3" required></textarea>
+              <textarea name="reason" class="form-control mb-4 text-white bg-dark" rows="3" required></textarea>
             </div>
 
             <div class="d-flex justify-content-between">
@@ -151,7 +151,7 @@ include 'includes/header.php';
 </main>
 
 <!-- Flatpickr -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
   // Pass holidays from PHP to JavaScript

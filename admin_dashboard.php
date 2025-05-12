@@ -45,15 +45,19 @@ $resUpcomingHolidays = $conn->query("SELECT COUNT(*) AS cnt FROM holidays WHERE 
 $upcomingHolidays = $resUpcomingHolidays->fetch_assoc()['cnt'];
 include 'includes/header.php';
 ?>
-
+<style>
+  .card{
+    background-color: #191c24 !important;
+  }
+</style>
 <main class="flex-grow-1 container">
-  <h2 class="mb-4">Admin Dashboard</h2>
-  
+  <h2 class="mb-4 pt-4">Admin Dashboard</h2>
+
   <div class="row row-cols-1 row-cols-md-3 g-4">
     <!-- Total Employees -->
     <div class="col">
       <a href="approve_employee.php" class="text-decoration-none">
-        <div class="card text-center border-dark border-3 shadow-sm">
+        <div class="card text-white bg-dark text-center border-dark border-3">
           <div class="card-body py-3">
             <h6 class="card-title mb-2">Total Employees</h6>
             <p class="display-6 fw-semibold mb-1"><?= $totalEmp ?></p>
@@ -62,12 +66,12 @@ include 'includes/header.php';
         </div>
       </a>
     </div>
-    
-    
+
+
     <!-- Employees Approved -->
     <div class="col">
       <a href="approve_employee.php" class="text-decoration-none">
-        <div class="card text-center border-dark border-3 shadow-sm">
+        <div class="card text-white bg-dark text-center border-dark border-3 shadow-sm">
           <div class="card-body py-3">
             <h6 class="card-title mb-2">Employees Approved</h6>
             <p class="display-6 fw-semibold mb-1"><?= $approvedEmp ?></p>
@@ -79,7 +83,7 @@ include 'includes/header.php';
 
     <div class="col">
       <a href="approve_employee.php" class="text-decoration-none">
-        <div class="card text-center border-dark border-3 shadow-sm">
+        <div class="card text-white bg-dark text-center border-dark border-3 shadow-sm">
           <div class="card-body py-3">
             <h6 class="card-title mb-2">Employees Pending</h6>
             <p class="display-6 fw-semibold mb-1"><?= $pendingEmp ?></p>
@@ -91,7 +95,7 @@ include 'includes/header.php';
 
     <div class="col">
       <a href="approve_leave.php" class="text-decoration-none">
-        <div class="card text-center border-dark border-3 shadow-sm">
+        <div class="card text-white bg-dark text-center border-dark border-3 shadow-sm">
           <div class="card-body py-3">
             <h6 class="card-title mb-2">Total Leave Requests</h6>
             <p class="display-6 fw-semibold mb-1"><?= $totalLeaves ?></p>
@@ -103,7 +107,7 @@ include 'includes/header.php';
 
     <div class="col">
       <a href="approve_leave.php" class="text-decoration-none">
-        <div class="card text-center border-dark border-3 shadow-sm">
+        <div class="card text-white bg-dark text-center border-dark border-3 shadow-sm">
           <div class="card-body py-3">
             <h6 class="card-title mb-2">Pending Leave Approvals</h6>
             <p class="display-6 fw-semibold mb-1"><?= $pendingLeave ?></p>
@@ -115,7 +119,7 @@ include 'includes/header.php';
 
     <div class="col">
       <a href="manage_department.php" class="text-decoration-none">
-        <div class="card text-center border-dark border-3 shadow-sm">
+        <div class="card text-white bg-dark text-center border-dark border-3 shadow-sm">
           <div class="card-body py-3">
             <h6 class="card-title mb-2">Total Departments</h6>
             <p class="display-6 fw-semibold mb-1"><?= $deptcnt ?></p>
@@ -127,7 +131,7 @@ include 'includes/header.php';
 
     <div class="col">
       <a href="holidays.php" class="text-decoration-none">
-        <div class="card text-center border-dark border-3 shadow-sm">
+        <div class="card text-white bg-dark text-center border-dark border-3 shadow-sm">
           <div class="card-body py-3">
             <h6 class="card-title mb-2">Total Holidays</h6>
             <p class="display-6 fw-semibold mb-1"><?= $totalHolidays ?></p>
@@ -139,11 +143,11 @@ include 'includes/header.php';
 
     <div class="col">
       <a href="holidays.php" class="text-decoration-none">
-        <div class="card text-center border-dark border-3 shadow-sm">
+        <div class="card text-white bg-dark text-center border-dark border-3 shadow-sm">
           <div class="card-body py-3">
             <h6 class="card-title mb-2">Past Holidays</h6>
             <p class="display-6 fw-semibold mb-1"><?= $pastHolidays ?></p>
-            <p class="fw-bold text-muted mb-0">Completed</p>
+            <p class="fw-bold text-secondary mb-0">Completed</p>
           </div>
         </div>
       </a>
@@ -151,7 +155,7 @@ include 'includes/header.php';
 
     <div class="col">
       <a href="holidays.php" class="text-decoration-none">
-        <div class="card text-center border-dark border-3 shadow-sm">
+        <div class="card text-white bg-dark text-center border-3 border-dark shadow-sm">
           <div class="card-body py-3">
             <h6 class="card-title mb-2">Upcoming Holidays</h6>
             <p class="display-6 fw-semibold mb-1"><?= $upcomingHolidays ?></p>
@@ -164,6 +168,6 @@ include 'includes/header.php';
   </div>
 </main>
 
-<footer class="text-center mt-auto py-3 text-muted small">
+<footer class=" text-white text-center mt-auto py-3 small">
   &copy; <?= date("Y") ?> Employee Leave Portal
 </footer>
