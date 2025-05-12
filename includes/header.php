@@ -113,13 +113,9 @@ $dashboard = $role === 'admin' ? 'Admin Portal' : 'Employee Portal';
     /* background-color: #343a40 !important; */
     border: 1px solid #6c757d;
   }
-
-  /* .flatpickr-calendar {
-    background-color: #121212 !important;
-    color: #fff !important;
-    border: 1px solid #333;
-  } */
 </style>
+
+
 <!-- Header -->
 <header class="text-white py-3 px-3 d-flex justify-content-between align-items-center fixed-top border-bottom border-dark border-3" style="z-index:1000;background-color:#191c24">
   <div class="d-flex align-items-center">

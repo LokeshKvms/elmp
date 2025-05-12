@@ -233,6 +233,7 @@
         $('#holidaysTable').DataTable({
           lengthChange: false,
           dom: 'Bfrtip',
+          pageLength:5,
           buttons: [{
             extend: 'excel',
             text: 'Export to Excel'

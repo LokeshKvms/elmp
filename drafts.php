@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <?php
 session_start();
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'employee') {
@@ -97,7 +98,6 @@ $draftList = $drafts->get_result();
 include 'includes/header.php';
 ?>
 
-<!DOCTYPE html>
 
 <head>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
@@ -111,7 +111,8 @@ include 'includes/header.php';
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  
+  <script src="https://cdn.tiny.cloud/1/3g4qn6x3hnpmu6lcwk8usodwmm9zjtgi4ppblgvjg2si6egn/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+
 
   <style>
     .holiday {
@@ -124,6 +125,46 @@ include 'includes/header.php';
       color: #fff;
     }
   </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      tinymce.init({
+        selector: 'textarea',
+        plugins: ['link', 'table', 'emoticons', 'image'],
+        toolbar: 'undo redo | bold italic underline | blocks fontfamily fontsize',
+        skin: 'oxide-dark', // UI dark skin
+        content_css: false, // Disable default styles
+        content_style: `
+        body {
+          background-color: #212529;
+          color: #ffffff;
+          font-family: Arial, sans-serif;
+        }
+        a { color: #212529; }
+        table, th, td {
+          border: 1px solid #444;
+        }
+      `,
+        height: 300,
+        menubar: false,
+        setup: function(editor) {
+          editor.on('change', function() {
+            editor.save();
+          });
+        }
+      });
+    });
+
+    function syncEditor() {
+      tinymce.triggerSave();
+      const content = document.getElementById("reason").value.trim();
+      if (content === "") {
+        alert("Please enter a reason for your leave.");
+        return false;
+      }
+      return true;
+    }
+  </script>
+
 </head>
 
 <body>

@@ -121,8 +121,9 @@ while ($row = $balanceResult->fetch_assoc()) {
     }
 
 
-    #holidaysTable thead th {
-      text-align: center !important;
+    #theTable tbody tr:nth-child(odd) {
+      background-color: #191c24 !important;
+      color: #fff;
     }
   </style>
 </head>
@@ -175,7 +176,7 @@ while ($row = $balanceResult->fetch_assoc()) {
   <!-- Leave History -->
   <div class="mb-4">
     <h4 class="mb-4">Leave History</h4>
-    <table id="theTable" class="table table-striped text-center">
+    <table id="theTable" class="table text-center">
       <thead class="text-center">
         <tr class="table-dark text-center">
           <th class="text-center">Leave Type</th>
