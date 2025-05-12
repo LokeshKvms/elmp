@@ -264,7 +264,7 @@ include 'includes/header.php';
           </tbody>
         </table>
       <?php else: ?>
-        <div class="alert alert-info">No drafts found.</div>
+        <div class="alert alert-light">No drafts found.</div>
       <?php endif; ?>
     <?php endif; ?>
 
