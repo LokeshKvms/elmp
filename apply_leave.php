@@ -68,7 +68,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   } elseif ($workingDays > 3) {
     $statusMessage = 'You can only apply for a maximum of 3 working (non-weekend) days.';
     $redirectTo = 'user_dashboard.php';
-  } else {
+  } elseif ($status === 'pending') {
+    // ✅ Check leave balance only if submitting for approval
+    $year = date('Y');
+    $balanceQuery = $conn->prepare("
+      SELECT total_allocated, used 
+      FROM Leave_Balances 
+      WHERE employee_id = ? AND leave_type_id = ? AND year = ?
+    ");
+    $balanceQuery->bind_param("iii", $userId, $leave_type_id, $year);
+    $balanceQuery->execute();
+    $balanceResult = $balanceQuery->get_result();
+
+    if ($balanceResult->num_rows === 0) {
+      $statusMessage = 'No leave balance record found for the selected leave type.';
+      $redirectTo = 'user_dashboard.php';
+    } else {
+      $balance = $balanceResult->fetch_assoc();
+      $remaining = $balance['total_allocated'] - $balance['used'];
+
+      if ($workingDays > $remaining) {
+        $statusMessage = "You cannot apply for $workingDays days. Only $remaining day(s) remaining in this leave type.";
+        $redirectTo = 'user_dashboard.php';
+      }
+    }
+  }
+
+  // Proceed only if there's no error message so far
+  if ($statusMessage === '') {
     $stmt = $conn->prepare("
       INSERT INTO Leave_Requests
         (employee_id, leave_type_id, start_date, end_date, reason, status, requested_at, working_days)
@@ -92,6 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
   }
 }
+
 
 include 'includes/header.php';
 ?>

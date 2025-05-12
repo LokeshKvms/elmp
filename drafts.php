@@ -49,6 +49,7 @@ function countWeekdays($start, $end)
 }
 
 // Edit draft functionality
+// Edit draft functionality
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_id'])) {
   $reqId = (int)$_POST['request_id'];
   $leave_type_id = (int)$_POST['leave_type'];
@@ -65,16 +66,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_id'])) {
   $reason = $_POST['reason'];
   $status = in_array($_POST['action'], ['draft', 'pending']) ? $_POST['action'] : 'draft';
 
-  // Update the draft in the database
-  $upd = $conn->prepare("UPDATE Leave_Requests SET leave_type_id = ?, start_date = ?, end_date = ?, reason = ?, status = ? WHERE request_id = ? AND employee_id = ?");
-  $upd->bind_param("issssii", $leave_type_id, $start_date, $end_date, $reason, $status, $reqId, $userId);
-  $upd->execute();
+  // Count working days (weekdays excluding holidays)
+  $workingDays = 0;
+  $current = new DateTime($start_date);
+  $endObj = new DateTime($end_date);
 
-  $message = "Draft " . ($status === 'pending' ? "submitted" : "updated") . " successfully.";
+  while ($current <= $endObj) {
+    $day = $current->format('N'); // 1=Mon, ..., 7=Sun
+    $dateStr = $current->format('Y-m-d');
+    if ($day < 6 && !in_array($dateStr, $holidays)) { // Exclude weekends and holidays
+      $workingDays++;
+    }
+    $current->modify('+1 day');
+  }
 
-  // Set redirection based on the action
-  $redirectTo = ($status === 'pending') ? 'user_dashboard.php' : 'drafts.php';
+  if ($workingDays == 0) {
+    $message = 'You have selected 0 working days.';
+    $redirectTo = 'drafts.php';
+  } elseif ($workingDays > 3) {
+    $message = 'You can only apply for a maximum of 3 working days.';
+    $redirectTo = 'drafts.php';
+  } elseif ($status === 'pending') {
+    // ✅ Check leave balance only if submitting for approval
+    $year = date('Y');
+    $balanceQuery = $conn->prepare("
+      SELECT total_allocated, used 
+      FROM Leave_Balances 
+      WHERE employee_id = ? AND leave_type_id = ? AND year = ?
+    ");
+    $balanceQuery->bind_param("iii", $userId, $leave_type_id, $year);
+    $balanceQuery->execute();
+    $balanceResult = $balanceQuery->get_result();
+
+    if ($balanceResult->num_rows === 0) {
+      $message = 'No leave balance record found for the selected leave type.';
+      $redirectTo = 'drafts.php';
+    } else {
+      $balance = $balanceResult->fetch_assoc();
+      $remaining = $balance['total_allocated'] - $balance['used'];
+
+      if ($workingDays > $remaining) {
+        $message = "You cannot apply for $workingDays days. Only $remaining day(s) remaining in this leave type.";
+        $redirectTo = 'drafts.php';
+      }
+    }
+  }
+
+  // Proceed only if there's no error message so far
+  if (empty($message)) {
+    // Update the draft in the database
+    $upd = $conn->prepare("UPDATE Leave_Requests SET leave_type_id = ?, start_date = ?, end_date = ?, reason = ?, status = ? WHERE request_id = ? AND employee_id = ?");
+    $upd->bind_param("issssii", $leave_type_id, $start_date, $end_date, $reason, $status, $reqId, $userId);
+    $upd->execute();
+
+    $message = "Draft " . ($status === 'pending' ? "submitted" : "updated") . " successfully.";
+
+    // If status is pending, update the balance
+    if ($status === 'pending') {
+      $conn->query("
+        UPDATE Leave_Balances 
+        SET used = used + $workingDays 
+        WHERE employee_id = $userId AND leave_type_id = $leave_type_id
+      ");
+    }
+
+    $redirectTo = ($status === 'pending') ? 'user_dashboard.php' : 'drafts.php';
+  }
 }
+
 
 // Draft editing functionality
 $editing = false;
