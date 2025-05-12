@@ -1,4 +1,5 @@
 <?php
+require 'session_check.php';
 if (!isset($_SESSION)) session_start();
 $name = $_SESSION['name'] ?? 'User';
 $role = $_SESSION['role'] ?? '';

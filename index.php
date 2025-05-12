@@ -145,6 +145,7 @@ if (isset($_SESSION['role'])) {
               $_SESSION['user_id'] = $user['employee_id'];
               $_SESSION['name'] = $user['name'];
               $_SESSION['role'] = 'admin';
+              $_SESSION['login_time'] = time();
               header("Location: admin_dashboard.php");
               exit;
             } else if ($user['status'] === 'active') {
