@@ -1,7 +1,6 @@
 <?php
 session_start();
 require 'includes/db.php';
-require 'includes/header.php';
 require 'includes/mail.php';
 
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
@@ -17,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $dept = $_POST['department_id'];
     $pos = $_POST['position'];
     $date = $_POST['hire_date'];
-
+    
     if ($id) {
         // Update existing employee
         echo "console.log('Editing employee with ID:'', $(this).data('id'));";
@@ -37,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $default_used = 0;
         $leaveTypes = $conn->query("SELECT leave_type_id, type_name FROM leave_types");
         $balanceStmt = $conn->prepare("INSERT INTO leave_balances (employee_id, leave_type_id, year, total_allocated, used) VALUES (?, ?, ?, ?, ?)");
-
+        
         while ($type = $leaveTypes->fetch_assoc()) {
             $leave_type_id = $type['leave_type_id'];
             $type_name = strtolower($type['type_name']);
@@ -46,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $balanceStmt->execute();
         }
         $balanceStmt->close();
-
+        
         $subject = "Welcome to the Company!";
         $body = "
         <h4>Hi {$name},</h4>
@@ -56,12 +55,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <p>Reset your password by clicking forgot password.</p>
         <br>
         <p>Regards,<br>Admin</p>";
-
+        
         sendMail($email, $subject, $body);
-
+        
         $_SESSION['toast'] = ['msg' => 'Employee added successfully.', 'class' => 'bg-success'];
     }
-
+    
     header("Location: approve_employee.php");
     exit;
 }
@@ -72,7 +71,7 @@ if (isset($_GET['delete'])) {
     $conn->query("DELETE FROM leave_requests WHERE employee_id = $id");
     $conn->query("DELETE FROM leave_balances WHERE employee_id = $id");
     $conn->query("DELETE FROM Employees WHERE employee_id = $id");
-
+    
     $_SESSION['toast'] = ['msg' => 'Employee deleted.', 'class' => 'bg-danger'];
     header("Location: approve_employee.php");
     exit;
@@ -81,27 +80,27 @@ if (isset($_GET['delete'])) {
 // Handle Approve
 if (isset($_GET['approve'])) {
     $emp_id = $_GET['approve'];
-
+    
     $emp = $conn->query("SELECT * FROM Employees WHERE employee_id = $emp_id")->fetch_assoc();
     $conn->query("UPDATE Employees SET status = 'active' WHERE employee_id = $emp_id");
-
+    
     $subject = "Welcome to the Company!";
     $body = "
-        <h4>Hi {$emp['name']},</h4>
-        <p>You have been approved as an employee at our company.</p>
-        <p><strong>Email:</strong> {$emp['email']}<br>
-           <strong>Position:</strong> {$emp['position']}<br>
-           <strong>Hire Date:</strong> {$emp['hire_date']}</p>
-        <p>Please log in to the portal using your registered email and password. An OTP will be sent to your email for login verification.</p>
-        <br><p>Regards,<br>Admin</p>";
-
+    <h4>Hi {$emp['name']},</h4>
+    <p>You have been approved as an employee at our company.</p>
+    <p><strong>Email:</strong> {$emp['email']}<br>
+    <strong>Position:</strong> {$emp['position']}<br>
+    <strong>Hire Date:</strong> {$emp['hire_date']}</p>
+    <p>Please log in to the portal using your registered email and password. An OTP will be sent to your email for login verification.</p>
+    <br><p>Regards,<br>Admin</p>";
+    
     sendMail($emp['email'], $subject, $body);
-
+    
     $year = date("Y");
     $default_used = 0;
     $leaveTypes = $conn->query("SELECT leave_type_id, type_name FROM leave_types");
     $balanceStmt = $conn->prepare("INSERT INTO leave_balances (employee_id, leave_type_id, year, total_allocated, used) VALUES (?, ?, ?, ?, ?)");
-
+    
     while ($type = $leaveTypes->fetch_assoc()) {
         $leave_type_id = $type['leave_type_id'];
         $type_name = strtolower($type['type_name']);
@@ -109,7 +108,7 @@ if (isset($_GET['approve'])) {
         $balanceStmt->bind_param("iisii", $emp_id, $leave_type_id, $year, $default_allocated, $default_used);
         $balanceStmt->execute();
     }
-
+    
     $_SESSION['toast'] = ['msg' => 'Employee approved.', 'class' => 'bg-success'];
     header("Location: approve_employee.php");
     exit;
@@ -120,25 +119,26 @@ if (isset($_GET['reject'])) {
     $emp_id = $_GET['reject'];
     $emp = $conn->query("SELECT * FROM Employees WHERE employee_id = $emp_id")->fetch_assoc();
     $conn->query("DELETE FROM Employees WHERE employee_id = $emp_id");
-
+    
     $subject = "Application Rejected";
     $body = "<h4>Dear {$emp['name']},</h4><p>Your employment application has been rejected. We wish you all the best.</p>";
     sendMail($emp['email'], $subject, $body);
-
+    
     $_SESSION['toast'] = ['msg' => 'Employee rejected.', 'class' => 'bg-danger'];
     header("Location: approve_employee.php");
     exit;
 }
+require 'includes/header.php';
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <title>Admin Dashboard - Approve Users</title>
-    <!-- Bootstrap 5 CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    
+    <head>
+        <meta charset="UTF-8">
+        <title>Admin Dashboard - Approve Users</title>
+        <!-- Bootstrap 5 CSS -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 
     <!-- DataTables Core CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">

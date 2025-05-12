@@ -14,33 +14,63 @@ $name = $_SESSION['name'];
 $holidays = [];
 $holidayQuery = "SELECT holiday_date FROM holidays"; // Assuming the table name is `holidays` and the column is `holiday_date`
 $holidayResult = $conn->query($holidayQuery);
-
 if ($holidayResult) {
   while ($row = $holidayResult->fetch_assoc()) {
-    $holidays[] = $row['holiday_date']; // Populate the holidays array with holiday dates
+    $holidays[] = $row['holiday_date'];
   }
 }
 
-// Fetch leave balances
-$balanceQuery = $conn->prepare("
+// Step 1: Fetch leave balances
+$balanceStmt = $conn->prepare("
   SELECT 
-    LT.leave_type_id,
+    LB.leave_type_id,
     LT.type_name,
-    LB.total_allocated,
-    LR.start_date,
-    LR.end_date
+    LB.total_allocated
   FROM Leave_Balances LB
   JOIN Leave_Types LT ON LB.leave_type_id = LT.leave_type_id
-  LEFT JOIN Leave_Requests LR ON 
-    LB.employee_id = LR.employee_id AND 
-    LB.leave_type_id = LR.leave_type_id AND 
-    LR.status = 'approved'
   WHERE LB.employee_id = ?
   ORDER BY LT.leave_type_id
 ");
-$balanceQuery->bind_param("i", $userId);
-$balanceQuery->execute();
-$balanceResult = $balanceQuery->get_result();
+$balanceStmt->bind_param("i", $userId);
+$balanceStmt->execute();
+$balances = $balanceStmt->get_result();
+
+$leaveData = [];
+while ($row = $balances->fetch_assoc()) {
+  $typeId = $row['leave_type_id'];
+  $leaveData[$typeId] = [
+    'type_name'       => $row['type_name'],
+    'total_allocated' => $row['total_allocated'],
+    'used'            => 0
+  ];
+}
+
+// Step 2: Fetch non-rejected leave requests
+$requestStmt = $conn->prepare("
+  SELECT leave_type_id, start_date, end_date 
+  FROM Leave_Requests 
+  WHERE employee_id = ? AND status NOT IN ('rejected','draft')
+");
+$requestStmt->bind_param("i", $userId);
+$requestStmt->execute();
+$requests = $requestStmt->get_result();
+
+// Step 3: Count working days used
+while ($row = $requests->fetch_assoc()) {
+  $typeId = $row['leave_type_id'];
+  $start = new DateTime($row['start_date']);
+  $end = new DateTime($row['end_date']);
+
+  while ($start <= $end) {
+    $dayOfWeek = $start->format('N'); // 1 (Mon) to 7 (Sun)
+    $dateStr = $start->format('Y-m-d');
+
+    if ($dayOfWeek < 6 && !in_array($dateStr, $holidays)) {
+      $leaveData[$typeId]['used']++;
+    }
+    $start->modify('+1 day');
+  }
+}
 
 // Fetch leave history
 $historyQuery = $conn->prepare("
@@ -53,38 +83,7 @@ $historyQuery = $conn->prepare("
 $historyQuery->bind_param("i", $userId);
 $historyQuery->execute();
 $history = $historyQuery->get_result();
-
-$leaveData = [];
-while ($row = $balanceResult->fetch_assoc()) {
-  $typeId = $row['leave_type_id'];
-  if (!isset($leaveData[$typeId])) {
-    $leaveData[$typeId] = [
-      'type_name'       => $row['type_name'],
-      'total_allocated' => $row['total_allocated'],
-      'used'            => 0
-    ];
-  }
-
-  // If start_date and end_date exist, count weekdays excluding weekends and holidays
-  if ($row['start_date'] && $row['end_date']) {
-    $start = new DateTime($row['start_date']);
-    $end = new DateTime($row['end_date']);
-    while ($start <= $end) {
-      $dayOfWeek = $start->format('N'); // 1 = Monday, 7 = Sunday
-      $dateStr = $start->format('Y-m-d');
-
-      // Count only weekdays (Mon-Fri) that are not holidays
-      if ($dayOfWeek < 6 && !in_array($dateStr, $holidays)) {
-        $leaveData[$typeId]['used']++;
-      }
-      $start->modify('+1 day');
-    }
-  }
-}
-
-// Now the $leaveData array will have the 'used' leave days excluding weekends and holidays.
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -119,7 +118,6 @@ while ($row = $balanceResult->fetch_assoc()) {
     .dataTables_filter {
       margin-bottom: 1rem !important;
     }
-
 
     #theTable tbody tr:nth-child(odd) {
       background-color: #191c24 !important;
@@ -169,7 +167,6 @@ while ($row = $balanceResult->fetch_assoc()) {
           </div>
         </div>
       <?php endforeach; ?>
-
     </div>
   </div>
 
@@ -189,7 +186,6 @@ while ($row = $balanceResult->fetch_assoc()) {
       <tbody>
         <?php while ($row = $history->fetch_assoc()): ?>
           <?php
-          // Choose badge color based on status
           switch ($row['status']) {
             case 'draft':
               $badge = 'warning';
@@ -212,9 +208,7 @@ while ($row = $balanceResult->fetch_assoc()) {
             <td class="text-light bg-transparent"><?= $row['start_date'] ?></td>
             <td class="text-light bg-transparent"><?= $row['end_date'] ?></td>
             <td class="text-light bg-transparent">
-              <span class="badge bg-<?= $badge ?>">
-                <?= ucfirst($row['status']) ?>
-              </span>
+              <span class="badge bg-<?= $badge ?>"><?= ucfirst($row['status']) ?></span>
             </td>
             <td class="text-light bg-transparent"><?= htmlspecialchars($row['reason']) ?></td>
           </tr>
@@ -226,6 +220,7 @@ while ($row = $balanceResult->fetch_assoc()) {
   <footer class="text-center mt-auto py-3 text-muted small bottom-0">
     &copy; <?= date("Y") ?> Employee Leave Portal
   </footer>
+
   <script>
     $(document).ready(function() {
       $('#theTable').DataTable({

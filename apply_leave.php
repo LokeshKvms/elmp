@@ -44,16 +44,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $leave_type_id = (int)$_POST['leave_type'];
   $range = explode(' to ', $_POST['leave_range']);
   $start_date = trim($range[0] ?? '');
-  $end_date   = isset($range[1]) ? trim($range[1]) : $start_date; // fallback to start_date if only one date selected
-  $reason        = $_POST['reason'];
-  $status        = in_array($_POST['action'], ['draft', 'pending']) ? $_POST['action'] : 'draft';
+  $end_date   = isset($range[1]) ? trim($range[1]) : $start_date;
+  $reason     = $_POST['reason'];
+  $status     = in_array($_POST['action'], ['draft', 'pending']) ? $_POST['action'] : 'draft';
 
-  // Count weekdays excluding weekends and holidays
+  // Count working days (weekdays excluding holidays)
   $workingDays = 0;
   $current = new DateTime($start_date);
+  $endObj = new DateTime($end_date);
 
-  while ($current <= new DateTime($end_date)) {
-    $day = $current->format('N'); // 1 = Monday, 7 = Sunday
+  while ($current <= $endObj) {
+    $day = $current->format('N'); // 1=Mon, ..., 7=Sun
     $dateStr = $current->format('Y-m-d');
     if ($day < 6 && !in_array($dateStr, $holidays)) {
       $workingDays++;
@@ -61,32 +62,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $current->modify('+1 day');
   }
 
-  // Check if working days count is 0
   if ($workingDays == 0) {
     $statusMessage = 'You have selected 0 working days.';
-    $redirectTo = 'user_dashboard.php'; // Or any other page you want
+    $redirectTo = 'user_dashboard.php';
+  } elseif ($workingDays > 3) {
+    $statusMessage = 'You can only apply for a maximum of 3 working (non-weekend) days.';
+    $redirectTo = 'user_dashboard.php';
   } else {
-    if (countWeekdays($start_date, $end_date) > 3) {
-      $statusMessage = 'You can only apply for a maximum of 3 working (non-weekend) days.';
-      $redirectTo = 'user_dashboard.php';
-    } else {
-      $stmt = $conn->prepare("
-        INSERT INTO Leave_Requests
-          (employee_id, leave_type_id, start_date, end_date, reason, status, requested_at)
-          VALUES (?, ?, ?, ?, ?, ?, NOW())
-      ");
-      $stmt->bind_param("iissss", $userId, $leave_type_id, $start_date, $end_date, $reason, $status);
+    $stmt = $conn->prepare("
+      INSERT INTO Leave_Requests
+        (employee_id, leave_type_id, start_date, end_date, reason, status, requested_at, working_days)
+        VALUES (?, ?, ?, ?, ?, ?, NOW(), ?)
+    ");
+    $stmt->bind_param("iissssi", $userId, $leave_type_id, $start_date, $end_date, $reason, $status, $workingDays);
 
-      if ($stmt->execute()) {
-        $statusMessage = $status === 'pending' ? 'Leave submitted successfully.' : 'Leave saved as draft successfully.';
-        $redirectTo = $status === 'pending' ? 'user_dashboard.php' : 'drafts.php';
-      } else {
-        $statusMessage = 'Error: ' . $stmt->error;
-        $redirectTo = 'user_dashboard.php';
+    if ($stmt->execute()) {
+      if ($status === 'pending') {
+        $conn->query("
+          UPDATE Leave_Balances 
+          SET used = used + $workingDays
+          WHERE employee_id = $userId AND leave_type_id = $leave_type_id
+        ");
       }
+      $statusMessage = $status === 'pending' ? 'Leave submitted successfully.' : 'Leave saved as draft successfully.';
+      $redirectTo = $status === 'pending' ? 'user_dashboard.php' : 'drafts.php';
+    } else {
+      $statusMessage = 'Error: ' . $stmt->error;
+      $redirectTo = 'user_dashboard.php';
     }
   }
 }
+
 include 'includes/header.php';
 ?>
 <html>

@@ -31,25 +31,22 @@ if (isset($_GET['action'], $_GET['id'])) {
 
             // After the approval/rejection logic:
             if ($upd) {
-                if ($status === 'approved') {
-                    $days = (strtotime($req['end_date']) - strtotime($req['start_date'])) / (60 * 60 * 24) + 1;
-                    $balUpd = $conn->query(
-                        "UPDATE Leave_Balances
-                         SET used = used + $days
-                         WHERE employee_id={$req['employee_id']} 
-                           AND leave_type_id={$req['leave_type_id']}"
-                    );
-                    if (!$balUpd) {
-                        $_SESSION['toast_message'] = ['message' => 'Leave approved, but balance update failed.', 'type' => 'danger'];
-                    } else {
-                        $_SESSION['toast_message'] = ['message' => 'Leave request approved!', 'type' => 'success'];
-                    }
+                if ($status === 'rejected') {
+                    // Restore the used leave days on rejection
+                    $restoreDays = (int)$req['working_days'];
+                    $conn->query("
+                    UPDATE Leave_Balances 
+                    SET used = used - $restoreDays 
+                    WHERE employee_id = {$req['employee_id']} AND leave_type_id = {$req['leave_type_id']}
+                  ");
+                    $_SESSION['toast_message'] = ['message' => 'Leave request rejected and balance restored!', 'type' => 'danger'];
                 } else {
-                    $_SESSION['toast_message'] = ['message' => 'Leave request rejected!', 'type' => 'danger'];
+                    $_SESSION['toast_message'] = ['message' => 'Leave request approved!', 'type' => 'success'];
                 }
             } else {
                 $_SESSION['toast_message'] = ['message' => 'Failed to update leave request.', 'type' => 'danger'];
             }
+
 
             header("Location: approve_leave.php");
             exit;
