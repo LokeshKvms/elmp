@@ -107,9 +107,16 @@ $dashboard = $role === 'admin' ? 'Admin Portal' : 'Employee Portal';
       <h5 class="mb-0 fw-bolder fs-4"><?= $dashboard ?></h5>
     </a>
   </div>
-  <div class="d-flex align-items-center gap-2" style="cursor:pointer;" data-bs-toggle="modal" data-bs-target="#profileModal">
-    <i class="fas fa-user-circle fs-5"></i>
-    <span class="fw-medium"><?= htmlspecialchars($name) ?></span>
+  <div class="d-flex align-items-center gap-2">
+    <?php if ($role !== 'admin'): ?>
+      <div style="cursor:pointer;" data-bs-toggle="modal" data-bs-target="#profileModal">
+        <i class="fas fa-user-circle fs-5"></i>
+        <span class="fw-medium"><?= htmlspecialchars($name) ?></span>
+      </div>
+    <?php else: ?>
+      <i class="fas fa-user-circle fs-5"></i>
+      <span class="fw-medium"><?= htmlspecialchars($name) ?></span>
+    <?php endif; ?>
     <a href="logout.php" class="btn btn-sm btn-outline-dark ms-3">Logout</a>
   </div>
 </header>
@@ -119,7 +126,7 @@ $dashboard = $role === 'admin' ? 'Admin Portal' : 'Employee Portal';
 <!-- Sidebar -->
 <div id="sidebar" class="shadow active border-end border-dark border-3">
   <div class="text-center">
-    <i class="fas fa-user-circle fa-3x mb-2 mt-3" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#profileModal"></i>
+    <i class="fas fa-user-circle fa-3x mb-2 mt-3"></i>
     <h6><?= htmlspecialchars($name) ?></h6>
     <small class=""><?= ucfirst($role) ?></small><br>
     <small class=""><?= htmlspecialchars($email) ?></small>

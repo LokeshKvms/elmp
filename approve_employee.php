@@ -217,9 +217,18 @@ require 'includes/header.php';
 
                     <!-- Department Field -->
                     <div class="mb-3">
-                        <label class="form-label">Department ID</label>
-                        <input type="number" name="department_id" id="department_id" class="form-control" required>
+                        <label class="form-label">Department</label>
+                        <select name="department_id" id="department_id" class="form-select" required>
+                            <option value="" disabled selected>Select Department</option>
+                            <?php
+                            $deptResult = $conn->query("SELECT department_id, name FROM Departments");
+                            while ($dept = $deptResult->fetch_assoc()) {
+                                echo "<option value='{$dept['department_id']}'>{$dept['name']}</option>";
+                            }
+                            ?>
+                        </select>
                     </div>
+
 
                     <!-- Position Field -->
                     <div class="mb-3">
@@ -413,7 +422,7 @@ require 'includes/header.php';
                     $('#employee_id').val(empId);
                     $('#name').val($(this).data('name'));
                     $('#email').val($(this).data('email'));
-                    $('#email').attr('disabled', true);
+                    $('#email').attr('readonly', true);
                     $('#department_id').val($(this).data('department'));
                     $('#position').val($(this).data('position'));
                     $('#hire_date').val($(this).data('date'));
@@ -424,7 +433,7 @@ require 'includes/header.php';
             });
 
             $('#addBtn').click(function() {
-                $('#email').attr('disabled', false);
+                $('#email').attr('readonly', false);
                 $('#employeeForm')[0].reset();
                 $('#employee_id').val('');
                 $('#employeeModal').modal('show');
