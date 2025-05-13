@@ -1,9 +1,9 @@
-<Files ".env">
-    Require ip 127.0.0.1
-    Require ip ::1
-    Require ip 192.168.1.27
+<FilesMatch "\.(env|gitignore)$">
+    # Require ip 127.0.0.1
+    # Require ip ::2
+    # Require ip 192.168.1.27
     Require all denied
-</Files>
+</FilesMatch>
 
 RewriteEngine On
-RewriteRule ^includes/ - [F,L]
+RewriteRule ^(includes|vendor|\.git)/ - [F,L]
