@@ -12,7 +12,6 @@ $userId = $_SESSION['user_id'];
 $message = '';
 $redirectTo = '';
 
-// Delete draft functionality
 if (isset($_GET['delete'])) {
   $delId = (int)$_GET['delete'];
   $stmt = $conn->prepare("DELETE FROM Leave_Requests WHERE request_id = ? AND employee_id = ? AND status = 'draft'");
@@ -22,18 +21,16 @@ if (isset($_GET['delete'])) {
   exit;
 }
 
-// Fetch holidays
 $holidays = [];
 $holidayQuery = "SELECT holiday_date FROM holidays";
 $holidayResult = $conn->query($holidayQuery);
 
 if ($holidayResult) {
   while ($row = $holidayResult->fetch_assoc()) {
-    $holidays[] = $row['holiday_date']; // Populate the holidays array with holiday dates
+    $holidays[] = $row['holiday_date'];
   }
 }
 
-// Function to count weekdays excluding weekends
 function countWeekdays($start, $end)
 {
   $start = new DateTime($start);
@@ -48,33 +45,29 @@ function countWeekdays($start, $end)
   return $count;
 }
 
-// Edit draft functionality
-// Edit draft functionality
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_id'])) {
   $reqId = (int)$_POST['request_id'];
   $leave_type_id = (int)$_POST['leave_type'];
 
-  // Ensure leave_range is valid before processing
   if (!empty($_POST['leave_range'])) {
     $range = explode('to', $_POST['leave_range']);
     $start_date = trim($range[0] ?? '');
-    $end_date = isset($range[1]) ? trim($range[1]) : $start_date; // fallback to start_date if only one date selected
+    $end_date = isset($range[1]) ? trim($range[1]) : $start_date;
   } else {
-    $start_date = $end_date = ''; // Fallback if no date is selected
+    $start_date = $end_date = '';
   }
 
   $reason = $_POST['reason'];
   $status = in_array($_POST['action'], ['draft', 'pending']) ? $_POST['action'] : 'draft';
 
-  // Count working days (weekdays excluding holidays)
   $workingDays = 0;
   $current = new DateTime($start_date);
   $endObj = new DateTime($end_date);
 
   while ($current <= $endObj) {
-    $day = $current->format('N'); // 1=Mon, ..., 7=Sun
+    $day = $current->format('N');
     $dateStr = $current->format('Y-m-d');
-    if ($day < 6 && !in_array($dateStr, $holidays)) { // Exclude weekends and holidays
+    if ($day < 6 && !in_array($dateStr, $holidays)) {
       $workingDays++;
     }
     $current->modify('+1 day');
@@ -87,7 +80,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_id'])) {
     $message = 'You can only apply for a maximum of 3 working days.';
     $redirectTo = 'drafts.php';
   } elseif ($status === 'pending') {
-    // ✅ Check leave balance only if submitting for approval
     $year = date('Y');
     $balanceQuery = $conn->prepare("
       SELECT total_allocated, used 
@@ -112,16 +104,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_id'])) {
     }
   }
 
-  // Proceed only if there's no error message so far
   if (empty($message)) {
-    // Update the draft in the database
     $upd = $conn->prepare("UPDATE Leave_Requests SET leave_type_id = ?, start_date = ?, end_date = ?, reason = ?, status = ? WHERE request_id = ? AND employee_id = ?");
     $upd->bind_param("issssii", $leave_type_id, $start_date, $end_date, $reason, $status, $reqId, $userId);
     $upd->execute();
 
     $message = "Draft " . ($status === 'pending' ? "submitted" : "updated") . " successfully.";
 
-    // If status is pending, update the balance
     if ($status === 'pending') {
       $conn->query("
         UPDATE Leave_Balances 
@@ -134,8 +123,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_id'])) {
   }
 }
 
-
-// Draft editing functionality
 $editing = false;
 if (isset($_GET['edit'])) {
   $editId = (int)$_GET['edit'];
@@ -148,7 +135,6 @@ if (isset($_GET['edit'])) {
   }
 }
 
-// Fetch leave types and drafts
 $types = $conn->query("SELECT * FROM Leave_Types WHERE leave_type_id IN (1, 2, 3)");
 $drafts = $conn->prepare("SELECT r.request_id, l.type_name, r.start_date, r.end_date, r.reason FROM Leave_Requests r JOIN Leave_Types l ON r.leave_type_id = l.leave_type_id WHERE r.employee_id = ? AND r.status = 'draft' ORDER BY r.requested_at DESC");
 $drafts->bind_param("i", $userId);
@@ -156,7 +142,6 @@ $drafts->execute();
 $draftList = $drafts->get_result();
 include 'includes/header.php';
 ?>
-
 
 <head>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
@@ -168,20 +153,14 @@ include 'includes/header.php';
   <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
   <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.tiny.cloud/1/3g4qn6x3hnpmu6lcwk8usodwmm9zjtgi4ppblgvjg2si6egn/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
-
 
   <style>
     .holiday {
       background-color: #f8d7da !important;
       color: #721c24 !important;
-    }
-
-    #theTable tbody tr:nth-child(odd) {
-      background-color: #191c24 !important;
-      color: #fff;
     }
   </style>
   <script>
@@ -190,21 +169,9 @@ include 'includes/header.php';
         selector: 'textarea',
         plugins: ['link', 'table', 'emoticons', 'image'],
         toolbar: 'undo redo | bold italic underline | blocks fontfamily fontsize',
-        skin: 'oxide-dark', // UI dark skin
-        content_css: false, // Disable default styles
-        content_style: `
-        body {
-          background-color: #212529;
-          color: #ffffff;
-          font-family: Arial, sans-serif;
-        }
-        a { color: #212529; }
-        table, th, td {
-          border: 1px solid #444;
-        }
-      `,
+        content_css: true, // Disable default styles
         height: 300,
-        menubar: false,
+        menubar: true,
         setup: function(editor) {
           editor.on('change', function() {
             editor.save();
@@ -234,7 +201,7 @@ include 'includes/header.php';
 
     <?php if (!$editing): ?>
       <?php if ($draftList->num_rows): ?>
-        <table id="theTable" class="table text-center">
+        <table id="theTable" class="table text-center table-bordered">
           <thead class="table-dark">
             <tr>
               <th>S.No</th>
@@ -254,10 +221,13 @@ include 'includes/header.php';
                 <td><?= $d['start_date'] ?></td>
                 <td><?= $d['end_date'] ?></td>
                 <td><?= $d['reason'] ?></td>
-                <td class="d-flex justify-content-center">
-                  <a href="?edit=<?= $d['request_id'] ?>" class="btn btn-sm btn-warning px-3 me-2">Edit</a>
-                  <a href="?delete=<?= $d['request_id'] ?>" class="btn btn-sm btn-danger ms-2" onclick="return confirm('Delete this draft?');">Delete</a>
+                <td>
+                  <div class="d-flex flex-wrap justify-content-center gap-2">
+                    <a href="?edit=<?= $d['request_id'] ?>" class="btn btn-sm btn-warning">Edit</a>
+                    <a href="?delete=<?= $d['request_id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this draft?');">Delete</a>
+                  </div>
                 </td>
+
               </tr>
             <?php $i++;
             endwhile; ?>
@@ -269,8 +239,8 @@ include 'includes/header.php';
     <?php endif; ?>
 
     <?php if ($editing): ?>
-      <div class="card bg-dark text-white p-4 px-5">
-        <h4 class="mb-3">Edit Draft</h4>
+      <div class="card p-4 px-5">
+        <h4 class="my-3">Edit Draft</h4>
         <form method="post">
           <input type="hidden" name="request_id" value="<?= $draft['request_id'] ?>">
           <div class="mb-3">
@@ -292,7 +262,7 @@ include 'includes/header.php';
             <label class="form-label">Reason</label>
             <textarea name="reason" class="form-control" rows="3" required><?= htmlspecialchars($draft['reason']) ?></textarea>
           </div>
-          <div class="d-flex justify-content-between">
+          <div class="d-flex justify-content-between mb-2">
             <div class="d-flex justify-content-start gap-1">
               <button type="submit" name="action" value="draft" class="btn btn-secondary me-2">Save as Draft</button>
               <a href="?delete=<?= $draft['request_id'] ?>" class="btn btn-danger" onclick="return confirm('Delete this draft permanently?');">Delete Draft</a>
@@ -309,9 +279,8 @@ include 'includes/header.php';
   </main>
 
   <script>
-    $('td').addClass('bg-transparent text-light');
+    $('td').addClass('bg-transparent');
     $('th').addClass('text-center');
-    $('input,select,textarea').addClass('bg-dark text-white');
     $(document).ready(function() {
       $('#theTable').DataTable({
         lengthChange: false,
@@ -328,10 +297,9 @@ include 'includes/header.php';
     flatpickr("#leave_range", {
       mode: "range",
       dateFormat: "Y-m-d",
-      minDate: "today", // Prevent selection of past dates
-      maxDate: "2025-12-31", // Optional: Set maximum range limit
+      minDate: "today",
+      maxDate: "2025-12-31",
 
-      // Highlight holidays
       onDayCreate: function(dObj, dStr, fp, dayElem) {
         const date = dayElem.dateObj.toISOString().split('T')[0];
         if (holidays.includes(date)) {
@@ -340,7 +308,6 @@ include 'includes/header.php';
         }
       },
 
-      // Validate on date range change
       onChange: function(selectedDates, dateStr, instance) {
         if (selectedDates.length === 2) {
           const start = selectedDates[0];
@@ -373,13 +340,14 @@ include 'includes/header.php';
   </script>
 
   <?php if ($message): ?>
-    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1100;">
-      <div class="toast align-items-center text-white bg-success border-0 show" role="alert">
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+      <div class="toast align-items-center bg-success text-white border-0 show" role="alert">
         <div class="d-flex">
           <div class="toast-body"><?= htmlspecialchars($message) ?></div>
         </div>
       </div>
     </div>
+
     <script>
       setTimeout(function() {
         window.location.href = '<?= $redirectTo ?>';

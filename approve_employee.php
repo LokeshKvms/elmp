@@ -27,6 +27,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->close();
     } else {
         // Add new employee
+        $checkStmt = $conn->prepare("SELECT employee_id FROM Employees WHERE email = ?");
+        $checkStmt->bind_param("s", $email);
+        $checkStmt->execute();
+        $checkStmt->store_result();
+
+        if ($checkStmt->num_rows > 0) {
+            $_SESSION['toast'] = ['msg' => 'Email already exists. Please use a different one.', 'class' => 'bg-danger'];
+            $checkStmt->close();
+            header("Location: approve_employee.php");
+            exit;
+        }
+        $checkStmt->close();
+
+
         $stmt = $conn->prepare("INSERT INTO Employees (name, email, department_id, position, hire_date, password, status) VALUES (?, ?, ?, ?, ?, 'elms@123', 'active')");
         $stmt->bind_param("ssiss", $name, $email, $dept, $pos, $date);
         $stmt->execute();

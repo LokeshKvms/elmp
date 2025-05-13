@@ -14,7 +14,7 @@ $dashboard = $role === 'admin' ? 'Admin Portal' : 'Employee Portal';
 <style>
   body {
     font-family: 'Rubik', sans-serif !important;
-    background-color: #000 !important;
+    background-color: #F5F7FA !important;
   }
 
   #sidebar {
@@ -23,7 +23,7 @@ $dashboard = $role === 'admin' ? 'Admin Portal' : 'Employee Portal';
     position: fixed;
     top: 0;
     left: -250px;
-    background-color: #191c24;
+    background-color: white;
     transition: left 0.3s;
     z-index: 999;
     padding-top: 60px;
@@ -34,15 +34,14 @@ $dashboard = $role === 'admin' ? 'Admin Portal' : 'Employee Portal';
   }
 
   .sidebar-link {
+    color: black;
     padding: 10px 20px;
     display: block;
-    color: #333;
     text-decoration: none;
-    color: white;
   }
 
   .sidebar-link:hover {
-    background-color: #000;
+    background-color: #F5F7FA;
     font-weight: bold;
   }
 
@@ -55,64 +54,10 @@ $dashboard = $role === 'admin' ? 'Admin Portal' : 'Employee Portal';
     margin-left: 250px;
   }
 
-  .custom-table tbody tr:nth-child(odd) {
-    background-color: #191c24 !important;
+  #theTable tbody tr:nth-child(odd),
+  #holidaysTable tbody tr:nth-child(odd) {
+    background-color: white !important;
     color: #fff;
-  }
-
-  .custom-table thead tr th {
-    text-align: center;
-  }
-
-  .custom-table td,
-  .custom-table th {
-    vertical-align: middle;
-  }
-
-  .custom-table thead {
-    background-color: #343a40;
-    color: #fff;
-  }
-
-  .dt-button.buttons-excel {
-    background-color: #191c24 !important;
-    /* Bootstrap gray */
-    color: white !important;
-    border: none !important;
-    padding: 6px 12px;
-    border-radius: 4px;
-  }
-
-  .dt-button.buttons-excel:hover {
-    background-color: #191c24 !important;
-    /* Darker gray on hover */
-    color: white !important;
-  }
-
-  /* Pagination buttons */
-  .dataTables_wrapper .dataTables_paginate .paginate_button {
-    background-color: #191c24 !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 3px;
-    margin: 0 2px;
-    padding: 5px 10px;
-  }
-
-  .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
-    background-color: #191c24 !important;
-    color: white !important;
-  }
-
-  .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-    background-color: #191c24 !important;
-    color: white !important;
-  }
-
-  .dataTables_filter input {
-    color: white !important;
-    /* background-color: #343a40 !important; */
-    border: 1px solid #6c757d;
   }
 </style>
 <script>
@@ -128,33 +73,37 @@ $dashboard = $role === 'admin' ? 'Admin Portal' : 'Employee Portal';
 
 
 <!-- Header -->
-<header class="text-white py-3 px-3 d-flex justify-content-between align-items-center fixed-top border-bottom border-dark border-3" style="z-index:1000;background-color:#191c24">
-  <div class="d-flex align-items-center">
-    <i class="fas fa-bars me-3 cursor-pointer" style="cursor:pointer;" onclick="toggleSidebar()"></i>
-    <strong>ELMS</strong>
+<header class="py-3 px-4 d-flex justify-content-between align-items-center fixed-top border-bottom border-dark border-3 bg-white" style="z-index:1000;">
+  <!-- Left: Sidebar Toggle & Logo -->
+  <div class="d-flex align-items-center gap-3">
+    <i class="fas fa-bars fs-5 cursor-pointer" onclick="toggleSidebar()" style="cursor:pointer;"></i>
+    <strong class="fs-5 ms-2">ELMS</strong>
   </div>
 
+  <!-- Center: Dashboard Link -->
   <div>
-    <a href="<?= $_SESSION['role'] === 'admin' ? 'admin_dashboard.php' : 'user_dashboard.php' ?>" class="text-white text-decoration-none">
-      <h5 class="mb-0"><?= $dashboard ?></h5>
+    <a href="<?= $_SESSION['role'] === 'admin' ? 'admin_dashboard.php' : 'user_dashboard.php' ?>" class="text-decoration-none text-dark">
+      <h5 class="mb-0 fw-bolder fs-4"><?= $dashboard ?></h5>
     </a>
   </div>
 
-  <div class="d-flex align-items-center">
-    <i class="fas fa-user-circle me-2"></i>
-    <?= htmlspecialchars($name) ?>
-    <a href="logout.php" class="btn btn-sm btn-light ms-3">Logout</a>
+  <!-- Right: User Info -->
+  <div class="d-flex align-items-center gap-2">
+    <i class="fas fa-user-circle fs-5"></i>
+    <span class="fw-medium"><?= htmlspecialchars($name) ?></span>
+    <a href="logout.php" class="btn btn-sm btn-outline-dark ms-3">Logout</a>
   </div>
 </header>
 
 
+
 <!-- Sidebar -->
 <div id="sidebar" class="shadow active border-end border-dark border-3">
-  <div class="text-center text-white">
+  <div class="text-center ">
     <i class="fas fa-user-circle fa-3x mb-2 mt-3"></i>
     <h6><?= htmlspecialchars($name) ?></h6>
-    <small class="text-white"><?= ucfirst($role) ?></small><br>
-    <small class="text-white"><?= htmlspecialchars($email) ?></small>
+    <small class=""><?= ucfirst($role) ?></small><br>
+    <small class=""><?= htmlspecialchars($email) ?></small>
   </div>
   <hr>
 
@@ -211,4 +160,4 @@ $dashboard = $role === 'admin' ? 'Admin Portal' : 'Employee Portal';
 </script>
 
 <!-- Wrapper for Page Content -->
-<div id="main-content" class="pt-5 mt-2 px-3 shifted text-white">
+<div id="main-content" class="pt-5 mt-2 px-3 shifted ">

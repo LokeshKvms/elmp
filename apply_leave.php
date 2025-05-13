@@ -2,7 +2,7 @@
 <?php
 session_start();
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'employee') {
-  header("Location: ../index.php");
+  header("Location: index.php");
   exit;
 }
 include 'includes/db.php';
@@ -11,21 +11,18 @@ $userId = $_SESSION['user_id'];
 $statusMessage = '';
 $redirectTo = '';
 
-// Fetch valid leave types
 $types = $conn->query("SELECT * FROM Leave_Types WHERE leave_type_id IN (1,2,3)");
 
-// Fetch holidays from the database
 $holidays = [];
-$holidayQuery = "SELECT holiday_date FROM holidays"; // Assuming the table name is `holidays` and the column is `holiday_date`
+$holidayQuery = "SELECT holiday_date FROM holidays";
 $holidayResult = $conn->query($holidayQuery);
 
 if ($holidayResult) {
   while ($row = $holidayResult->fetch_assoc()) {
-    $holidays[] = $row['holiday_date']; // Populate the holidays array with holiday dates
+    $holidays[] = $row['holiday_date'];
   }
 }
 
-// Function to count weekdays excluding weekends
 function countWeekdays($start, $end)
 {
   $start = new DateTime($start);
@@ -48,13 +45,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $reason     = $_POST['reason'];
   $status     = in_array($_POST['action'], ['draft', 'pending']) ? $_POST['action'] : 'draft';
 
-  // Count working days (weekdays excluding holidays)
   $workingDays = 0;
   $current = new DateTime($start_date);
   $endObj = new DateTime($end_date);
 
   while ($current <= $endObj) {
-    $day = $current->format('N'); // 1=Mon, ..., 7=Sun
+    $day = $current->format('N');
     $dateStr = $current->format('Y-m-d');
     if ($day < 6 && !in_array($dateStr, $holidays)) {
       $workingDays++;
@@ -69,7 +65,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $statusMessage = 'You can only apply for a maximum of 3 working (non-weekend) days.';
     $redirectTo = 'user_dashboard.php';
   } elseif ($status === 'pending') {
-    // ✅ Check leave balance only if submitting for approval
     $year = date('Y');
     $balanceQuery = $conn->prepare("
       SELECT total_allocated, used 
@@ -94,7 +89,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
   }
 
-  // Proceed only if there's no error message so far
   if ($statusMessage === '') {
     $stmt = $conn->prepare("
       INSERT INTO Leave_Requests
@@ -126,7 +120,8 @@ include 'includes/header.php';
 <html>
 
 <head>
-  <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.tiny.cloud/1/3g4qn6x3hnpmu6lcwk8usodwmm9zjtgi4ppblgvjg2si6egn/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -134,21 +129,9 @@ include 'includes/header.php';
         selector: 'textarea',
         plugins: ['link', 'table', 'emoticons', 'image'],
         toolbar: 'undo redo | bold italic underline | blocks fontfamily fontsize',
-        skin: 'oxide-dark', // UI dark skin
-        content_css: false, // Disable default styles
-        content_style: `
-        body {
-          background-color: #212529;
-          color: #ffffff;
-          font-family: Arial, sans-serif;
-        }
-        a { color: #212529; }
-        table, th, td {
-          border: 1px solid #444;
-        }
-      `,
+        content_css: true,
         height: 300,
-        menubar: false,
+        menubar: true,
         setup: function(editor) {
           editor.on('change', function() {
             editor.save();
@@ -170,7 +153,6 @@ include 'includes/header.php';
   <style>
     .holiday {
       background-color: #f8d7da !important;
-      /* Light red background */
       color: #721c24 !important;
     }
   </style>
@@ -179,18 +161,16 @@ include 'includes/header.php';
 
 <body>
 
-
-
   <main class="flex-grow-1 container py-4">
     <div class="row justify-content-center">
-      <div class="col-12 col-md-10 col-lg-8 w-100">
-        <div class="card shadow-sm border-1 p-4 px-5" style="background-color: #191c24;">
-          <div class="card-body text-white">
-            <h2 class="card-title text-white mb-4">Apply for Leave</h2>
+      <div class="col-12 col-md-10 col-lg-8 w-75">
+        <div class="card shadow-sm border-1 p-4 px-5 shadow-lg">
+          <div class="card-body">
+            <h2 class="card-title text-dark mb-3">Apply for Leave</h2>
 
             <?php if (!empty($statusMessage)): ?>
-              <div class="position-fixed top-0 end-0 p-3 m-3" style="z-index: 1100;">
-                <div class="toast align-items-center text-white bg-success border-0 show" role="alert">
+              <div class="position-fixed top-0 end-0 ps-3 ms-3" style="z-index: 1100;">
+                <div class="toast text-white fw-semibold align-items-center bg-success border-0 show" role="alert">
                   <div class="d-flex">
                     <div class="toast-body"><?= htmlspecialchars($statusMessage) ?></div>
                   </div>
@@ -206,7 +186,7 @@ include 'includes/header.php';
             <form method="post" onsubmit="return syncEditor();">
               <div class="mb-3">
                 <label class="form-label">Leave Type</label>
-                <select name="leave_type" class="form-select text-white bg-dark" required>
+                <select name="leave_type" class="form-select" required>
                   <option value="">-- Select --</option>
                   <?php while ($type = $types->fetch_assoc()): ?>
                     <option value="<?= $type['leave_type_id'] ?>">
@@ -218,13 +198,13 @@ include 'includes/header.php';
 
               <div class="mb-3">
                 <label class="form-label">Leave Date Range</label>
-                <input type="text" name="leave_range" id="leave_range" class="form-control mb-1 text-white bg-dark" required placeholder="Select date range">
+                <input type="text" name="leave_range" id="leave_range" class="form-control mb-1" required placeholder="Select date range">
                 <small class="text-secondary form-text">Note: Max 3 working days (Mon–Fri). Weekends and holidays are excluded automatically.</small>
               </div>
 
               <div class="mb-3">
                 <label class="form-label">Reason</label>
-                <textarea id="reason" name="reason" class="form-control mb-4 text-white bg-dark" rows="3"></textarea>
+                <textarea id="reason" name="reason" class="form-control mb-4" rows="3"></textarea>
               </div>
 
               <div class="d-flex justify-content-between">
@@ -242,19 +222,16 @@ include 'includes/header.php';
     </div>
   </main>
 
-  <!-- Flatpickr -->
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script>
-    // Pass holidays from PHP to JavaScript
     const holidays = <?= json_encode($holidays) ?>;
 
     flatpickr("#leave_range", {
       mode: "range",
       dateFormat: "Y-m-d",
-      minDate: "today", // Prevent selection of past dates
-      maxDate: "2025-12-31", // Optional: Set maximum range limit
+      minDate: "today",
+      maxDate: "2025-12-31",
 
-      // Highlight holidays
       onDayCreate: function(dObj, dStr, fp, dayElem) {
         const date = dayElem.dateObj.toISOString().split('T')[0];
         if (holidays.includes(date)) {
@@ -263,7 +240,6 @@ include 'includes/header.php';
         }
       },
 
-      // Validate on date range change
       onChange: function(selectedDates, dateStr, instance) {
         if (selectedDates.length === 2) {
           const start = selectedDates[0];

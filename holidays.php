@@ -82,11 +82,6 @@
     <!-- JSZip (required for Excel export) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
-      #holidaysTable tbody tr:nth-child(odd) {
-        background-color: #191c24 !important;
-        color: #fff;
-      }
-
       #holidaysTable thead td {
         background-color: #191c24 !important;
         color: #fff;
@@ -99,8 +94,8 @@
     <!-- Add/Edit Modal -->
     <div class="modal fade" id="addHolidayModal" tabindex="-1">
       <div class="modal-dialog">
-        <div class="modal-content bg-dark px-3">
-          <form method="POST" id="holidayForm text-light">
+        <div class="modal-content px-3">
+          <form method="POST" id="holidayForm">
             <div class="modal-header">
               <h5 class="modal-title" id="addHolidayModalLabel">Add / Edit Holiday</h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="background-color:white !important;"></button>
@@ -153,14 +148,14 @@
         <?php endif; ?>
       </div>
 
-      <table id='holidaysTable' class="table text-center">
+      <table id='holidaysTable' class="table text-center table-bordered">
         <thead class="table-dark">
           <tr>
-            <th>S.No</th>
-            <th>Date</th>
-            <th>Holiday Name</th>
+            <th class="text-center">S.No</th>
+            <th class="text-center">Date</th>
+            <th class="text-center">Holiday Name</th>
             <?php if ($_SESSION['role'] === 'admin'): ?>
-              <th>Actions</th>
+              <th class="text-center">Actions</th>
             <?php endif; ?>
           </tr>
         </thead>
@@ -172,11 +167,11 @@
             while ($row = $result->fetch_assoc()):
           ?>
               <tr>
-                <td class="text-light bg-transparent"><?= $i++ ?></td>
-                <td class="text-light bg-transparent"><?= $row['holiday_date'] ?></td>
-                <td class="text-light bg-transparent"><?= $row['holiday_name'] ?></td>
+                <td class="bg-transparent"><?= $i++ ?></td>
+                <td class="bg-transparent"><?= $row['holiday_date'] ?></td>
+                <td class="bg-transparent"><?= $row['holiday_name'] ?></td>
                 <?php if ($_SESSION['role'] === 'admin'): ?>
-                  <td class="text-light bg-transparent">
+                  <td class="bg-transparent">
                     <button class=" btn btn-sm btn-warning px-3 mx-1" onclick='editHoliday(<?= json_encode($row) ?>)'>Edit</button>
                     <button class="btn btn-sm btn-danger mx-1" onclick="confirmDelete(<?= $row['holiday_id'] ?>)">Delete</button>
                   </td>
@@ -233,7 +228,7 @@
         $('#holidaysTable').DataTable({
           lengthChange: false,
           dom: 'Bfrtip',
-          pageLength:5,
+          pageLength: 5,
           buttons: [{
             extend: 'excel',
             text: 'Export to Excel'

@@ -106,6 +106,7 @@ if (isset($_POST['login'])) {
       // Toggle active class
       document.getElementById('btn-employee').classList.remove('active');
       document.getElementById('btn-admin').classList.remove('active');
+      document.getElementById('password').value="";
 
       if (role === 'employee') {
         document.getElementById('btn-employee').classList.add('active');

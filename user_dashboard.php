@@ -118,11 +118,6 @@ $history = $historyQuery->get_result();
     .dataTables_filter {
       margin-bottom: 1rem !important;
     }
-
-    #theTable tbody tr:nth-child(odd) {
-      background-color: #191c24 !important;
-      color: #fff;
-    }
   </style>
 </head>
 
@@ -136,7 +131,7 @@ $history = $historyQuery->get_result();
       <?php foreach ($leaveData as $data): ?>
         <!-- Allocated -->
         <div class="col">
-          <div class="card text-center text-white border-dark border-3 shadow-sm" style="background-color: #191c24;">
+          <div class="card text-center border-dark border-3 shadow-lg">
             <div class="card-body py-3">
               <h6 class="card-title mb-2"><?= htmlspecialchars($data['type_name']) ?> - Allocated</h6>
               <p class="display-6 fw-semibold mb-1"><?= $data['total_allocated'] ?></p>
@@ -147,7 +142,7 @@ $history = $historyQuery->get_result();
 
         <!-- Used -->
         <div class="col">
-          <div class="card text-center text-white border-dark border-3 shadow-sm" style="background-color: #191c24;">
+          <div class="card text-center border-dark border-3 shadow-lg">
             <div class="card-body py-3">
               <h6 class="card-title mb-2"><?= htmlspecialchars($data['type_name']) ?> - Used</h6>
               <p class="display-6 fw-semibold mb-1"><?= $data['used'] ?></p>
@@ -158,7 +153,7 @@ $history = $historyQuery->get_result();
 
         <!-- Remaining -->
         <div class="col">
-          <div class="card text-center text-white border-dark border-3 shadow-sm" style="background-color: #191c24;">
+          <div class="card text-center border-dark border-3 shadow-lg"">
             <div class="card-body py-3">
               <h6 class="card-title mb-2"><?= htmlspecialchars($data['type_name']) ?> - Remaining</h6>
               <p class="display-6 fw-semibold mb-1"><?= $data['total_allocated'] - $data['used'] ?></p>
@@ -173,7 +168,7 @@ $history = $historyQuery->get_result();
   <!-- Leave History -->
   <div class="mb-4">
     <h4 class="mb-4">Leave History</h4>
-    <table id="theTable" class="table text-center">
+    <table id="theTable" class="table text-center table-bordered">
       <thead class="text-center">
         <tr class="table-dark text-center">
           <th class="text-center">Leave Type</th>
@@ -204,13 +199,13 @@ $history = $historyQuery->get_result();
           }
           ?>
           <tr>
-            <td class="text-light bg-transparent"><?= htmlspecialchars($row['type_name']) ?></td>
-            <td class="text-light bg-transparent"><?= $row['start_date'] ?></td>
-            <td class="text-light bg-transparent"><?= $row['end_date'] ?></td>
-            <td class="text-light bg-transparent">
+            <td class="bg-transparent"><?= htmlspecialchars($row['type_name']) ?></td>
+            <td class="bg-transparent"><?= $row['start_date'] ?></td>
+            <td class="bg-transparent"><?= $row['end_date'] ?></td>
+            <td class="bg-transparent">
               <span class="badge bg-<?= $badge ?>"><?= ucfirst($row['status']) ?></span>
             </td>
-            <td class="text-light bg-transparent"><?= htmlspecialchars($row['reason']) ?></td>
+            <td class="bg-transparent"><?= htmlspecialchars_decode($row['reason']) ?></td>
           </tr>
         <?php endwhile; ?>
       </tbody>
