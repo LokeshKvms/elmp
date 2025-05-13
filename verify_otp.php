@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("iis", $otp, $expires, $email);
         if ($stmt->execute()) {
             try {
-                sendmail($email,'Your OTP for Login',"<h3>Your new OTP is: <strong>$otp</strong></h3>");
+                sendmail($email, 'Your OTP for Login', "<h3>Your new OTP is: <strong>$otp</strong></h3>");
                 $success = "OTP resent successfully.";
             } catch (Exception $e) {
                 $error = "OTP resend failed: " . $mail->ErrorInfo;
@@ -114,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label for="otp" class="form-label">Enter OTP</label>
                 <input type="text" name="otp" id="otp" class="form-control" required>
             </div>
-            <button type="submit" name="verify" class="btn btn-primary w-100">Verify OTP</button>
+            <button type="submit" name="verify" class="btn btn-dark w-100">Verify OTP</button>
         </form>
 
         <form method="post" class="mt-3 text-center">

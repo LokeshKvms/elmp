@@ -101,7 +101,7 @@ include 'includes/header.php';
     <!-- Add/Edit Modal -->
     <div class="modal fade" id="addDepartmentModal" tabindex="-1">
         <div class="modal-dialog">
-            <div class="modal-content bg-dark px-3">
+            <div class="modal-content px-3">
                 <form method="POST" id="departmentForm">
                     <div class="modal-header">
                         <h5 class="modal-title" id="addDepartmentModalLabel">Add / Edit Department</h5>
@@ -116,7 +116,7 @@ include 'includes/header.php';
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="submit" class="btn btn-dark">Save</button>
                     </div>
                 </form>
             </div>
@@ -151,7 +151,7 @@ include 'includes/header.php';
             <?php endif; ?>
         </div>
 
-        <table id="theTable" class="table text-center">
+        <table id="theTable" class="table text-center table-bordered">
             <thead class="table-dark">
                 <tr>
                     <th>S.No</th>
@@ -169,10 +169,10 @@ include 'includes/header.php';
                     while ($row = $result->fetch_assoc()):
                 ?>
                         <tr>
-                            <td class='text-light bg-transparent'><?= $i++ ?></td>
-                            <td class='text-light bg-transparent'><?= $row['name'] ?></td>
+                            <td class=' bg-transparent'><?= $i++ ?></td>
+                            <td class=' bg-transparent'><?= $row['name'] ?></td>
                             <?php if ($_SESSION['role'] === 'admin'): ?>
-                                <td class='text-light bg-transparent'>
+                                <td class=' bg-transparent'>
                                     <button class="btn btn-sm btn-warning px-3 mx-1" onclick='editDepartment(<?= json_encode($row) ?>)'>Edit</button>
                                     <button class="btn btn-sm btn-danger mx-1" onclick="confirmDelete(<?= $row['department_id'] ?>)">Delete</button>
                                 </td>

@@ -2,7 +2,6 @@
 session_start();
 include 'includes/db.php';
 
-// Redirect if not admin
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     header("Location: index.php");
     exit;
@@ -10,12 +9,10 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 
 $manager_id = $_SESSION['user_id'];
 
-// Handle approve/reject actions
 if (isset($_GET['action'], $_GET['id'])) {
     $action = $_GET['action'];
     $req_id = (int)$_GET['id'];
 
-    // Fetch the specific request
     $reqRes = $conn->query("SELECT * FROM Leave_Requests WHERE request_id = $req_id");
     if ($reqRes && $reqRes->num_rows === 1) {
         $req = $reqRes->fetch_assoc();
@@ -29,10 +26,8 @@ if (isset($_GET['action'], $_GET['id'])) {
                  WHERE request_id=$req_id"
             );
 
-            // After the approval/rejection logic:
             if ($upd) {
                 if ($status === 'rejected') {
-                    // Restore the used leave days on rejection
                     $restoreDays = (int)$req['working_days'];
                     $conn->query("
                     UPDATE Leave_Balances 
@@ -94,15 +89,6 @@ include 'includes/header.php';
         thead th {
             text-align: center !important;
         }
-
-        td {
-            color: white !important;
-        }
-
-        .table tbody tr:nth-child(odd) {
-            background-color: #191c24 !important;
-            color: #fff;
-        }
     </style>
 </head>
 
@@ -138,7 +124,7 @@ include 'includes/header.php';
     }
     ?>
 
-    <table id="theTable" class="table text-center">
+    <table id="theTable" class="table text-center table-bordered">
         <thead>
             <tr class="table-dark">
                 <th>Employee</th>
@@ -193,7 +179,7 @@ include 'includes/header.php';
         </select>
     </div>
 
-    <table id="leaveTable" class="table text-center">
+    <table id="leaveTable" class="table text-center table-bordered">
         <thead>
             <tr class="table-dark">
                 <th>Employee</th>
@@ -238,7 +224,6 @@ include 'includes/header.php';
         &copy; <?= date("Y") ?> Employee Leave Portal
     </footer>
 
-    <!-- Bootstrap & DataTables Scripts -->
     <script>
         if (!$.fn.dataTable.isDataTable('#theTable')) {
             $('#theTable').DataTable({
@@ -254,7 +239,6 @@ include 'includes/header.php';
             });
         }
 
-        // Initialize the second table only if it hasn't been initialized
         if (!$.fn.dataTable.isDataTable('#leaveTable')) {
             $('#leaveTable').DataTable({
                 lengthChange: false,
@@ -269,20 +253,16 @@ include 'includes/header.php';
             });
         }
 
-        // Status filter - Apply filtering on status change
         $('#statusFilter').on('change', function() {
             var selectedStatus = this.value.toLowerCase(); // Get the selected status
             var table = $('#leaveTable').DataTable();
             if (selectedStatus) {
-                // Filter by status (column index 7 is the Status column)
                 table.column(7).search(selectedStatus).draw();
             } else {
-                // Clear the filter if the default option is selected
                 table.column(7).search('').draw();
             }
         });
 
-        // Initialize Toast if it exists
         const toastEl = document.querySelector('.toast');
         if (toastEl) {
             const toast = new bootstrap.Toast(toastEl, {

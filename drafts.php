@@ -267,7 +267,7 @@ include 'includes/header.php';
               <button type="submit" name="action" value="draft" class="btn btn-secondary me-2">Save as Draft</button>
               <a href="?delete=<?= $draft['request_id'] ?>" class="btn btn-danger" onclick="return confirm('Delete this draft permanently?');">Delete Draft</a>
             </div>
-            <button type="submit" name="action" value="pending" class="btn btn-primary">Submit for Approval</button>
+            <button type="submit" name="action" value="pending" class="btn btn-dark">Submit for Approval</button>
           </div>
         </form>
       </div>

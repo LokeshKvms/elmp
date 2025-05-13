@@ -20,7 +20,7 @@ $message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['resend'])) {
-        $_SESSION['forget']=true;
+        $_SESSION['forget'] = true;
         $email = $_SESSION['reset_email'] ?? '';
         if (!empty($email)) {
             $otp = rand(100000, 999999);
@@ -150,7 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             <?php endif; ?>
 
-            <button type="submit" class="btn btn-primary w-100 mb-3">
+            <button type="submit" class="btn btn-dark w-100 mb-3">
                 <?= $showOtpField ? "Verify OTP" : "Send OTP" ?>
             </button>
         </form>

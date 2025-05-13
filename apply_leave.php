@@ -209,7 +209,7 @@ include 'includes/header.php';
 
               <div class="d-flex justify-content-between">
                 <button type="submit" name="action" value="draft" class="btn btn-secondary">Save as Draft</button>
-                <button type="submit" name="action" value="pending" class="btn btn-primary">Submit for Approval</button>
+                <button type="submit" name="action" value="pending" class="btn btn-dark">Submit for Approval</button>
               </div>
             </form>
           </div>

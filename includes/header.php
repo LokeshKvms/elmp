@@ -55,8 +55,17 @@ $dashboard = $role === 'admin' ? 'Admin Portal' : 'Employee Portal';
   }
 
   #theTable tbody tr:nth-child(odd),
-  #holidaysTable tbody tr:nth-child(odd) {
+  #holidaysTable tbody tr:nth-child(odd),
+  #employeeTable tbody tr:nth-child(odd),
+  #leaveTable tbody tr:nth-child(odd) {
     background-color: white !important;
+    color: #fff;
+  }
+
+  #theTable tbody tr:nth-child(even),
+  #holidaysTable tbody tr:nth-child(even),
+  #employeeTable tbody tr:nth-child(even) {
+    background-color: #F5F7FA !important;
     color: #fff;
   }
 </style>

@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $dept = $_POST['department_id'];
     $pos = $_POST['position'];
     $date = $_POST['hire_date'];
-    
+
     if ($id) {
         // Update existing employee
         echo "console.log('Editing employee with ID:'', $(this).data('id'));";
@@ -185,15 +185,9 @@ require 'includes/header.php';
             text-align: center !important;
         }
 
-        #employeeTable tbody tr:nth-child(odd) {
-            background-color: #191c24 !important;
-            color: #fff;
-        }
-
         .d-flex.justify-content-between {
             align-items: center;
         }
-        
     </style>
 </head>
 
@@ -201,7 +195,7 @@ require 'includes/header.php';
 
     <div class="modal fade" id="employeeModal" tabindex="-1">
         <div class="modal-dialog">
-            <form method="POST" id="employeeForm" class="modal-content bg-dark px-3">
+            <form method="POST" id="employeeForm" class="modal-content px-3">
                 <div class="modal-header mt-2">
                     <h5 class="modal-title">Add / Edit Employee</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" style="background-color:white !important;"></button>
@@ -242,7 +236,7 @@ require 'includes/header.php';
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" data-bs-dismiss="modal" id="cancelBtn">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="submit" class="btn btn-dark">Save</button>
                 </div>
             </form>
         </div>
@@ -251,12 +245,12 @@ require 'includes/header.php';
 
     <main class="flex-grow-1">
         <div class="container mt-1">
-            <div class="d-flex justify-content-between">
+            <div class="d-flex mt-3 justify-content-between">
                 <h3 class="mb-4 pt-2">List of Employees</h3>
-                <button id="addBtn" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#employeeModal">Add Employee</button>
+                <button id="addBtn" class="btn btn-dark mb-2" data-bs-toggle="modal" data-bs-target="#employeeModal">Add Employee</button>
             </div>
 
-            <table id="employeeTable" class="table table-striped my-3">
+            <table id="employeeTable" class="table table-bordered my-3">
                 <thead class="table-dark text-center">
                     <tr>
                         <th>Name</th>
@@ -288,16 +282,16 @@ require 'includes/header.php';
 
 
                             echo "<tr style='text-align:center'>
-    <td class='text-light bg-transparent'>{$emp['name']}</td>
-    <td class='text-light bg-transparent'>{$emp['email']}</td>
-    <td class='text-light bg-transparent'>{$emp['dept_name']}</td>
-    <td class='text-light bg-transparent'>{$emp['position']}</td>
-    <td class='text-light bg-transparent'>{$emp['hire_date']}</td>
-    <td class='text-light bg-transparent'>" .
+    <td class='bg-transparent'>{$emp['name']}</td>
+    <td class='bg-transparent'>{$emp['email']}</td>
+    <td class='bg-transparent'>{$emp['dept_name']}</td>
+    <td class='bg-transparent'>{$emp['position']}</td>
+    <td class='bg-transparent'>{$emp['hire_date']}</td>
+    <td class='bg-transparent'>" .
                                 ($isActive ? "<label class='form-label'>Approved</label>" : "<a href='?approve={$emp['employee_id']}' class='btn btn-success btn-sm'>Approve</a>
     <button class='btn btn-danger btn-sm rejectBtn' data-id='{$emp['employee_id']}'>Reject</button>") .
                                 "</td>
-    <td class='text-light bg-transparent'>
+    <td class='bg-transparent'>
         <button class='btn btn-warning px-3 btn-sm editBtn'
         data-id='{$emp['employee_id']}'
         data-name='{$emp['name']}'
@@ -406,41 +400,33 @@ require 'includes/header.php';
                 <?php unset($_SESSION['toast']); ?>
             }
 
-            // When the edit button is clicked
             $(document).ready(function() {
-                // When the edit button is clicked
                 $(document).on('click', '.editBtn', function() {
                     const empId = $(this).data('id');
-                    console.log("Editing employee with ID:", empId); // This will now work for dynamically added elements.
+                    console.log("Editing employee with ID:", empId);
 
-                    // Check if the employee ID is valid
                     if (!empId) {
                         console.error("Employee ID is missing.");
-                        return; // Prevent further action
+                        return;
                     }
 
-                    // Populate the modal form
                     $('#employee_id').val(empId);
                     $('#name').val($(this).data('name'));
                     $('#email').val($(this).data('email'));
+                    $('#email').attr('disabled', true);
                     $('#department_id').val($(this).data('department'));
                     $('#position').val($(this).data('position'));
                     $('#hire_date').val($(this).data('date'));
 
-                    // Show the modal for editing
                     $('#employeeModal').modal('show');
                 });
 
             });
 
-
-            // When the "Add Employee" button is clicked
-            // When the "Add Employee" button is clicked
             $('#addBtn').click(function() {
-                // Clear the modal fields (if any)
-                $('#employeeForm')[0].reset(); // Reset all fields to their default state
-                $('#employee_id').val(''); // Make sure employee_id is empty for new employee
-                // Show the modal for adding
+                $('#email').attr('disabled', false);
+                $('#employeeForm')[0].reset();
+                $('#employee_id').val('');
                 $('#employeeModal').modal('show');
             });
 
