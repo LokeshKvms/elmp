@@ -16,6 +16,28 @@ $stmt->bind_result($position, $hire_date, $password, $department);
 $stmt->fetch();
 $stmt->close();
 $dashboard = $role === 'admin' ? 'Admin Portal' : 'Employee Portal';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'update_password') {
+  require 'db.php'; // make sure $conn is defined
+
+  $newPassword = $_POST['new_password'] ?? '';
+  $employee_id = $_SESSION['user_id'] ?? 0;
+
+  if (strlen($newPassword) < 3) {
+    echo json_encode(['success' => false, 'message' => 'Password must be at least 3 characters.']);
+    exit;
+  }
+
+  $stmt = $conn->prepare("UPDATE employees SET password = ? WHERE employee_id = ?");
+  $stmt->bind_param("si", $newPassword, $employee_id);
+
+  if ($stmt->execute()) {
+    echo json_encode(['success' => true, 'message' => 'Password updated successfully.']);
+  } else {
+    echo json_encode(['success' => false, 'message' => 'Failed to update password.']);
+  }
+  $stmt->close();
+  exit;
+}
 
 ?>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -121,8 +143,6 @@ $dashboard = $role === 'admin' ? 'Admin Portal' : 'Employee Portal';
   </div>
 </header>
 
-
-
 <!-- Sidebar -->
 <div id="sidebar" class="shadow active border-end border-dark border-3">
   <div class="text-center">
@@ -172,6 +192,20 @@ $dashboard = $role === 'admin' ? 'Admin Portal' : 'Employee Portal';
     <i class="fas fa-calendar-alt me-2"></i>Manage Holidays
   </a>
 </div>
+<!-- Feedback Modal -->
+<div class="modal fade" id="feedbackModal" tabindex="-1" aria-hidden="true" style="z-index:2001;height:200px;">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-dark">
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title">Message</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="feedbackMessage">
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Profile Modal -->
 <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -218,6 +252,11 @@ $dashboard = $role === 'admin' ? 'Admin Portal' : 'Employee Portal';
               <input type="date" name="hire_date" value="<?= htmlspecialchars($hire_date) ?>" class="form-control" readonly>
             </div>
           </div>
+          <div class="modal-footer d-flex justify-content-center">
+            <button type="button" class="btn btn-warning fw-semibold" id="editPasswordBtn">Edit Password</button>
+            <button type="button" class="btn btn-dark d-none" id="savePasswordBtn">Save</button>
+          </div>
+
         </div>
       </form>
     </div>
@@ -235,6 +274,68 @@ $dashboard = $role === 'admin' ? 'Admin Portal' : 'Employee Portal';
     document.getElementById('main-content').classList.toggle('shifted');
   }
 </script>
+
+<script>
+  $(document).ready(function() {
+    $('#editPasswordBtn').on('click', function() {
+      // Hide readonly fields
+      $('input[name="password"], input[name="name"], input[name="email"], input[name="department"], input[name="position"], input[name="hire_date"]').closest('.mb-3').addClass('d-none');
+
+      // Show new password fields and save button
+      $('#newPasswordGroup, #confirmPasswordGroup').removeClass('d-none');
+      $('#savePasswordBtn').removeClass('d-none');
+      $('#editPasswordBtn').addClass('d-none');
+    });
+
+    $('#savePasswordBtn').on('click', function() {
+      const newPassword = $('input[name="new_password"]').val().trim();
+      const confirmPassword = $('input[name="confirm_password"]').val().trim();
+
+      if (newPassword === '' || confirmPassword === '') {
+        showFeedback("Both fields are required.", false);
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        showFeedback("Passwords do not match.", false);
+        return;
+      }
+
+      $.ajax({
+        url: '',
+        method: 'POST',
+        data: {
+          action: 'update_password',
+          new_password: newPassword
+        },
+        success: function(response) {
+          let res;
+          try {
+            res = JSON.parse(response);
+          } catch {
+            res = {
+              success: false,
+              message: "Unexpected server error."
+            };
+          }
+          showFeedback(res.message, res.success);
+          if (res.success) {
+            setTimeout(() => location.reload(), 1500);
+          }
+        },
+        error: function() {
+          showFeedback("AJAX request failed.", false);
+        }
+      });
+      $('#profileModal').modal('hide');
+    });
+
+    function showFeedback(message, success) {
+      $('#feedbackMessage').html(`<div class="alert ${success ? 'alert-success' : 'alert-danger'} mb-0">${message}</div>`);
+      $('#feedbackModal').modal('show');
+    }
+  });
+</script>
+
 
 <!-- Wrapper for Page Content -->
 <div id="main-content" class="pt-5 mt-2 px-3 shifted ">
