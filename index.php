@@ -148,11 +148,11 @@ if (isset($_POST['login'])) {
     function enableLogin() {
       $("#loginBtn").removeAttr("disabled");
       const recaptchaResponse = grecaptcha.getResponse();
-      console.log(recaptchaResponse); // Add this line to check the response
+      console.log(recaptchaResponse);
 
       if (recaptchaResponse.length === 0) {
         console.log('Captcha not completed!');
-        $("#loginBtn").attr("disabled", "disabled"); // Disable the button if CAPTCHA is not verified
+        $("#loginBtn").attr("disabled", "disabled");
         return;
       }
 
@@ -183,12 +183,12 @@ if (isset($_POST['login'])) {
 
 <body style="background-image: radial-gradient(circle, white, #707070);">
   <div class="container d-flex align-items-center justify-content-center min-vh-100">
-    <div class="card shadow-lg bg-dark text-white rounded-4 p-5" style="max-width: 450px; width: 100%;">
+    <div class="card shadow-lg rounded-4 p-5" style="max-width: 450px; width: 100%;">
       <h3 class="text-center mb-3" id="roleLabel">Employee Login</h3>
 
       <div class="d-flex justify-content-around mb-3">
-        <button type="button" id="btn-employee" class="btn btn-outline-light me-2 w-100 active" onclick="switchRole('employee')">Employee</button>
-        <button type="button" id="btn-admin" class="btn btn-outline-light ms-2 w-100" onclick="switchRole('admin')">Admin</button>
+        <button type="button" id="btn-employee" class="btn btn-outline-secondary me-2 w-100 active" onclick="switchRole('employee')">Employee</button>
+        <button type="button" id="btn-admin" class="btn btn-outline-secondary ms-2 w-100" onclick="switchRole('admin')">Admin</button>
       </div>
 
       <form method="post">
@@ -210,11 +210,11 @@ if (isset($_POST['login'])) {
           </div>
 
           <div class="mb-3 text-center d-flex justify-content-center">
-            <div class="g-recaptcha" data-sitekey="6LeM1DYrAAAAADr-eWGoIv3aQBXt13clCX_mnD_H" data-callback="enableLogin" data-theme="dark"></div>
+            <div class="g-recaptcha" data-sitekey="6LeM1DYrAAAAADr-eWGoIv3aQBXt13clCX_mnD_H" data-callback="enableLogin"></div>
           </div>
         </div>
 
-        <button name="login" id="loginBtn" class="btn btn-light w-100" disabled>Login</button>
+        <button name="login" id="loginBtn" class="btn btn-dark w-100" disabled>Login</button>
       </form>
 
       <p class="text-center mt-3">
@@ -229,9 +229,6 @@ if (isset($_POST['login'])) {
   }
   ?>
 
-  <footer class="text-center mt-4 py-3 text-muted small fixed-bottom">
-    &copy; <?= date("Y") ?> Employee Leave Portal
-  </footer>
 </body>
 
 </html>

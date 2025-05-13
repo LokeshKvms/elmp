@@ -37,8 +37,6 @@ if (isset($_SESSION['role'])) {
     .card {
       max-width: 600px;
       width: 100%;
-      background-color: #000;
-      color: white;
       border-radius: 1rem;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
       margin: auto;
@@ -97,7 +95,7 @@ if (isset($_SESSION['role'])) {
 
 <body>
   <main class="flex-grow-1 d-flex align-items-center justify-content-center mt-4">
-    <div class="card bg-dark p-5">
+    <div class="card p-5">
       <h3 class="text-center mb-3">Employee Registration</h3>
 
       <form method="post" id="registerForm">
@@ -148,8 +146,8 @@ if (isset($_SESSION['role'])) {
         </div>
 
         <div class="d-flex justify-content-between">
-          <button name="register" class="btn btn-light w-50 me-2" id="registerBtn" disabled>Register</button>
-          <button type="button" onclick="clearForm()" class="btn btn-outline-light w-50 ms-2">Clear</button>
+          <button name="register" class="btn btn-dark w-50 me-2" id="registerBtn" disabled>Register</button>
+          <button type="button" onclick="clearForm()" class="btn btn-outline-dark w-50 ms-2">Clear</button>
         </div>
       </form>
 

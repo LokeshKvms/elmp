@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 
 <body class="d-flex align-items-center justify-content-center min-vh-100" style="background-image: radial-gradient(circle, white, #707070);">
-    <div class="bg-dark text-white card p-4 shadow" style="width: 100%; max-width: 400px;">
+    <div class="card p-4 shadow" style="width: 100%; max-width: 400px;">
         <h4 class="mb-3 text-center">Reset Password</h4>
         <form method="POST">
             <div class="mb-3">
