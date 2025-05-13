@@ -24,7 +24,8 @@ if (isset($_SESSION['role'])) {
     body {
       margin: 0;
       padding: 0;
-      background-image: radial-gradient(circle, white, #707070);
+      background-color: black;
+      backdrop-filter: blur(5px);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -93,9 +94,9 @@ if (isset($_SESSION['role'])) {
   </script>
 </head>
 
-<body>
+<body style="background-color: #F5F7FA;">
   <main class="flex-grow-1 d-flex align-items-center justify-content-center mt-4">
-    <div class="card p-5">
+    <div class="card shadow-lg p-5">
       <h3 class="text-center mb-3">Employee Registration</h3>
 
       <form method="post" id="registerForm">
@@ -152,7 +153,7 @@ if (isset($_SESSION['role'])) {
       </form>
 
       <p class="mt-3 text-center">
-        Already have an account? <a href="index.php" class="text-info">Login here</a>
+        Already have an account? <a href="index.php" class="text-primary">Login here</a>
       </p>
 
       <?php

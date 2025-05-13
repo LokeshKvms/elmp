@@ -99,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </script>
 </head>
 
-<body class="bg-light d-flex justify-content-center align-items-center vh-100" style="background-image: radial-gradient(circle, white, #707070);">
+<body class="d-flex justify-content-center align-items-center vh-100" style="background-color:#F5F7FA;">
     <div class="card p-4 shadow-lg rounded-3" style="max-width: 400px; width: 100%;">
         <h4 class="text-center mb-3">Verify OTP</h4>
         <?php if (isset($error)): ?>

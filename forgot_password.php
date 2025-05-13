@@ -132,10 +132,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </script>
 </head>
 
-<body class="d-flex align-items-center justify-content-center min-vh-100" style="background-image: radial-gradient(circle, white, #707070);">
+<body class="d-flex align-items-center justify-content-center min-vh-100" style="background-color:#F5F7FA;">
     <?= $message ?? '' ?>
 
-    <div class="card p-5 shadow" style="width: 100%; max-width: 400px;">
+    <div class="card p-5 shadow-lg" style="width: 100%; max-width: 400px;">
         <h4 class="mb-3 text-center">Forgot Password</h4>
         <form method="POST">
             <div class="mb-3">

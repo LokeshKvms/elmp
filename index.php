@@ -106,7 +106,7 @@ if (isset($_POST['login'])) {
       // Toggle active class
       document.getElementById('btn-employee').classList.remove('active');
       document.getElementById('btn-admin').classList.remove('active');
-      document.getElementById('password').value="";
+      document.getElementById('password').value = "";
 
       if (role === 'employee') {
         document.getElementById('btn-employee').classList.add('active');
@@ -181,14 +181,15 @@ if (isset($_POST['login'])) {
   </style>
 </head>
 
-<body style="background-image: radial-gradient(circle, white, #707070);">
+<body style="background-color:#F5F7FA;">
+
   <div class="container d-flex align-items-center justify-content-center min-vh-100">
-    <div class="card shadow-lg rounded-4 p-5" style="max-width: 450px; width: 100%;">
-      <h3 class="text-center mb-3" id="roleLabel">Employee Login</h3>
+    <div class="card shadow-lg rounded-4 p-5 py-3" style="max-width: 450px; width: 100%;">
+      <h3 class="text-center mb-4 mt-3" id="roleLabel">Employee Login</h3>
 
       <div class="d-flex justify-content-around mb-3">
-        <button type="button" id="btn-employee" class="btn btn-outline-secondary me-2 w-100 active" onclick="switchRole('employee')">Employee</button>
-        <button type="button" id="btn-admin" class="btn btn-outline-secondary ms-2 w-100" onclick="switchRole('admin')">Admin</button>
+        <button type="button" id="btn-employee" class="btn btn-outline-dark me-2 w-100 active" onclick="switchRole('employee')">Employee</button>
+        <button type="button" id="btn-admin" class="btn btn-outline-dark ms-2 w-100" onclick="switchRole('admin')">Admin</button>
       </div>
 
       <form method="post">
@@ -206,7 +207,7 @@ if (isset($_POST['login'])) {
           </div>
 
           <div class="mb-3 text-start ms-3">
-            <a href="forgot_password.php" class="text-info">Forgot Password ?</a>
+            <a href="forgot_password.php" class="text-primary">Forgot Password ?</a>
           </div>
 
           <div class="mb-3 text-center d-flex justify-content-center">
@@ -218,7 +219,7 @@ if (isset($_POST['login'])) {
       </form>
 
       <p class="text-center mt-3">
-        New user? <a href="register.php" class="text-info">Register here</a>
+        New user? <a href="register.php" class="text-primary">Register here</a>
       </p>
     </div>
   </div>
