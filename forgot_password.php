@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } else {
         $_SESSION['forget'] = true;
-        $stmt = $conn->prepare("SELECT * FROM Employees WHERE email = ?");
+        $stmt = $conn->prepare("SELECT * FROM Employees WHERE email = ? AND email !='admin@gmail.com'");
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -140,10 +140,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <form method="POST">
             <div class="mb-3">
                 <label class="form-label">Email:</label>
-                <input type="email" name="email" class="form-control" required value="<?= htmlspecialchars($email) ?>">
+                <input id="email" type="email" name="email" class="form-control" required value="<?= htmlspecialchars($email) ?>">
             </div>
 
             <?php if ($showOtpField): ?>
+            <script>document.getElementById('email').setAttribute('readonly', true);</script>
+
                 <div class="mb-3">
                     <label>Enter OTP:</label>
                     <input type="text" name="otp" class="form-control" required>

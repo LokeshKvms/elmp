@@ -32,14 +32,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($checkStmt->num_rows > 0) {
             $_SESSION['toast'] = ['msg' => 'Email already exists. Please use a different one.', 'class' => 'bg-danger'];
             $checkStmt->close();
-            header("Location: approve_employee.php");
             exit;
         }
         $checkStmt->close();
 
-        $password = password_hash('elms@123',PASSWORD_DEFAULT);
+        $password = password_hash('elms@123', PASSWORD_DEFAULT);
         $stmt = $conn->prepare("INSERT INTO Employees (name, email, department_id, position, hire_date, password, status) VALUES (?, ?, ?, ?, ?, ?, 'active')");
-        $stmt->bind_param("ssisss", $name, $email, $dept, $pos, $date,$password);
+        $stmt->bind_param("ssisss", $name, $email, $dept, $pos, $date, $password);
         $stmt->execute();
         $newEmpId = $stmt->insert_id;
         $stmt->close();

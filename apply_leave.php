@@ -199,7 +199,7 @@ include 'includes/header.php';
               <div class="mb-3">
                 <label class="form-label">Leave Date Range</label>
                 <input type="text" name="leave_range" id="leave_range" class="form-control mb-1" required placeholder="Select date range">
-                <small class="text-secondary form-text">Note: Max 3 working days (Mon–Fri). Weekends and holidays are excluded automatically.</small>
+                <small id="info-text" class="text-secondary form-text">Note: Max 3 working days (Mon–Fri). Weekends and holidays are excluded.</small>
               </div>
 
               <div class="mb-3">
@@ -266,6 +266,8 @@ include 'includes/header.php';
             alert("You can only apply for a maximum of 3 working days excluding weekends and holidays.");
             instance.clear();
           }
+
+          document.getElementById('info-text').innerHTML=`No. of days leaves applied : ${count}`;
         }
       }
     });

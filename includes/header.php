@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'update_passwo
     echo json_encode(['success' => false, 'message' => 'Password must be at least 3 characters.']);
     exit;
   }
-  $hashPass = password_hash($newPassword,PASSWORD_DEFAULT);
+  $hashPass = password_hash($newPassword, PASSWORD_DEFAULT);
   $stmt = $conn->prepare("UPDATE employees SET password = ? WHERE employee_id = ?");
   $stmt->bind_param("si", $hashPass, $employee_id);
 
@@ -220,16 +220,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'update_passwo
 
             <div class="mb-3 col-6">
               <label class="form-label">Name</label>
-              <input type="text" name="name" value="<?= htmlspecialchars($name) ?>" class="form-control" readonly>
+              <input type="text" name="name" value="<?= htmlspecialchars($name) ?>" class="form-control" style="cursor:not-allowed" readonly>
             </div>
             <div class="mb-3 col-6">
               <label class="form-label">Email</label>
-              <input type="email" name="email" value="<?= htmlspecialchars($email) ?>" class="form-control" readonly>
+              <input type="email" name="email" value="<?= htmlspecialchars($email) ?>" class="form-control" style="cursor:not-allowed" readonly>
             </div>
-            <!-- <div class="mb-3 col-6">
-              <label class="form-label">Password</label>
-              <input type="text" name="password" value="<?= htmlspecialchars($password) ?>" class="form-control" readonly>
-            </div> -->
             <div class="mb-3 col-6 d-none" id="newPasswordGroup">
               <label class="form-label">New Password</label>
               <input type="password" name="new_password" class="form-control">
@@ -241,15 +237,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'update_passwo
 
             <div class="mb-3 col-6">
               <label class="form-label">Department</label>
-              <input type="text" name="department" value="<?= htmlspecialchars($department) ?>" class="form-control" readonly>
+              <input type="text" name="department" value="<?= htmlspecialchars($department) ?>" class="form-control" style="cursor:not-allowed" readonly>
             </div>
             <div class="mb-3 col-6">
               <label class="form-label">Position</label>
-              <input type="text" name="position" value="<?= htmlspecialchars($position) ?>" class="form-control" readonly>
+              <input type="text" name="position" value="<?= htmlspecialchars($position) ?>" class="form-control" style="cursor:not-allowed" readonly>
             </div>
             <div class="mb-3 col-6">
               <label class="form-label">Hire Date</label>
-              <input type="date" name="hire_date" value="<?= htmlspecialchars($hire_date) ?>" class="form-control" readonly>
+              <input type="date" name="hire_date" value="<?= htmlspecialchars($hire_date) ?>" class="form-control" style="cursor:not-allowed" readonly>
             </div>
           </div>
           <div class="modal-footer d-flex justify-content-center">
