@@ -1,12 +1,13 @@
 <?php
 session_start();
+unset($_SESSION['isOk']);
+$_SESSION['log']=true;
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'employee') {
   header("Location: index.php");
   exit;
 }
 include 'includes/db.php';
 include 'includes/header.php';
-unset($_SESSION['isOk']);
 $userId = $_SESSION['user_id'];
 $name = $_SESSION['name'];
 

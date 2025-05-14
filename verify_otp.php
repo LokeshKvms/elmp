@@ -3,6 +3,16 @@ session_start();
 require 'includes/db.php';
 require 'includes/mail.php';
 
+if (isset($_SESSION['role']) || isset($_SESSION['log'])) {
+    if ($_SESSION['role'] === 'admin') {
+        header("Location: admin_dashboard.php");
+        exit;
+    } else if ($_SESSION['role'] === 'employee') {
+        header("Location: user_dashboard.php");
+        exit;
+    }
+}
+
 if (!isset($_SESSION['email']) || !isset($_SESSION['isOk'])) {
     header("Location: index.php");
     exit;
