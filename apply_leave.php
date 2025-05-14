@@ -147,6 +147,12 @@ include 'includes/header.php';
         alert("Please enter a reason for your leave.");
         return false;
       }
+      const range = document.getElementById("leave_range").value.trim();
+      const dates = range.split(" to ");
+      if (dates.length < 1 || !dates[0]) {
+        alert("Please select a valid date range.");
+        return false;
+      }
       return true;
     }
   </script>
@@ -260,14 +266,16 @@ include 'includes/header.php';
           if (count == 0) {
             alert("You have selected 0 working days.");
             instance.clear();
+            document.getElementById('info-text').innerHTML = `Note: Max 3 working days (Mon–Fri). Weekends and holidays are excluded.`;
           }
 
           if (count > 3) {
             alert("You can only apply for a maximum of 3 working days excluding weekends and holidays.");
             instance.clear();
+            document.getElementById('info-text').innerHTML = `Note: Max 3 working days (Mon–Fri). Weekends and holidays are excluded.`;
           }
 
-          document.getElementById('info-text').innerHTML=`No. of days leaves applied : ${count}`;
+          document.getElementById('info-text').innerHTML = `No. of days leaves applied : ${count}`;
         }
       }
     });

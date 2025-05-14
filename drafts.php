@@ -187,6 +187,12 @@ include 'includes/header.php';
         alert("Please enter a reason for your leave.");
         return false;
       }
+      const range = document.getElementById("leave_range").value.trim();
+      const dates = range.split(" to ");
+      if (dates.length < 1 || !dates[0]) {
+        alert("Please select a valid date range.");
+        return false;
+      }
       return true;
     }
   </script>
@@ -256,11 +262,11 @@ include 'includes/header.php';
           <div class="mb-3">
             <label class="form-label">Leave Date Range</label>
             <input type="text" name="leave_range" id="leave_range" class="form-control" required placeholder="Select date range" value="<?= htmlspecialchars($draft['start_date'] . ($draft['end_date'] !== $draft['start_date'] ? ' to ' . $draft['end_date'] : '')) ?>">
-            <small class="text-muted form-text">Note: Max 3 working days (Mon–Fri). Weekends and holidays are excluded automatically.</small>
+            <small id="info-text" class="text-muted form-text">Note: Max 3 working days (Mon–Fri). Weekends and holidays are excluded automatically.</small>
           </div>
           <div class="mb-3">
             <label class="form-label">Reason</label>
-            <textarea name="reason" class="form-control" rows="3" required><?= htmlspecialchars($draft['reason']) ?></textarea>
+            <textarea name="reason" class="form-control" rows="3"><?= htmlspecialchars($draft['reason']) ?></textarea>
           </div>
           <div class="d-flex justify-content-between mb-2">
             <div class="d-flex justify-content-start gap-1">
@@ -317,7 +323,7 @@ include 'includes/header.php';
           const current = new Date(start);
 
           while (current <= end) {
-            const day = current.getDay(); // 0 = Sun, 6 = Sat
+            const day = current.getDay();
             const dateStr = current.toISOString().split('T')[0];
             if (day !== 0 && day !== 6 && !holidays.includes(dateStr)) {
               count++;
@@ -328,12 +334,16 @@ include 'includes/header.php';
           if (count == 0) {
             alert("You have selected 0 working days.");
             instance.clear();
+            document.getElementById('info-text').innerHTML = `Note: Max 3 working days (Mon–Fri). Weekends and holidays are excluded.`;
           }
 
           if (count > 3) {
             alert("You can only apply for a maximum of 3 working days excluding weekends and holidays.");
             instance.clear();
+            document.getElementById('info-text').innerHTML = `Note: Max 3 working days (Mon–Fri). Weekends and holidays are excluded.`;
+
           }
+          document.getElementById('info-text').innerHTML = `No. of days leaves applied : ${count}`;
         }
       }
     });
