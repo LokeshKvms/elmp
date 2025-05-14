@@ -2,45 +2,35 @@
 session_start();
 include 'includes/db.php';
 
-// Only admin allowed
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
   header("Location: index.php");
   exit;
 }
 unset($_SESSION['isOk']);
-// Total employees (active)
 $resTotal = $conn->query("SELECT COUNT(*) AS total FROM Employees WHERE status='active'");
 $totalEmp = $resTotal->fetch_assoc()['total'];
 
-// Employees Approved (active)
 $resEmpApproved = $conn->query("SELECT COUNT(*) AS cnt FROM Employees WHERE status = 'active'");
 $approvedEmp = $resEmpApproved->fetch_assoc()['cnt'];
 
-// Employees Pending Approval (inactive)
 $resEmpPending = $conn->query("SELECT COUNT(*) AS cnt FROM Employees WHERE status = 'inactive'");
 $pendingEmp = $resEmpPending->fetch_assoc()['cnt'];
 
-// Total leave requests
 $resTotalLeaves = $conn->query("SELECT COUNT(*) AS cnt FROM Leave_Requests");
 $totalLeaves = $resTotalLeaves->fetch_assoc()['cnt'];
 
-// Leave requests pending
 $resLeavePending = $conn->query("SELECT COUNT(*) AS cnt FROM Leave_Requests WHERE status = 'pending'");
 $pendingLeave = $resLeavePending->fetch_assoc()['cnt'];
 
-// Total departments
 $resDepts = $conn->query("SELECT COUNT(*) AS cnt FROM departments");
 $deptcnt = $resDepts->fetch_assoc()['cnt'];
 
-// Holidays (total)
 $resTotalHolidays = $conn->query("SELECT COUNT(*) AS cnt FROM holidays");
 $totalHolidays = $resTotalHolidays->fetch_assoc()['cnt'];
 
-// Past holidays
 $resPastHolidays = $conn->query("SELECT COUNT(*) AS cnt FROM holidays WHERE holiday_date <= CURDATE()");
 $pastHolidays = $resPastHolidays->fetch_assoc()['cnt'];
 
-// Upcoming holidays
 $resUpcomingHolidays = $conn->query("SELECT COUNT(*) AS cnt FROM holidays WHERE holiday_date > CURDATE()");
 $upcomingHolidays = $resUpcomingHolidays->fetch_assoc()['cnt'];
 include 'includes/header.php';
@@ -49,7 +39,6 @@ include 'includes/header.php';
   <h2 class="mb-4 pt-4">Admin Dashboard</h2>
 
   <div class="row row-cols-1 row-cols-md-3 g-4">
-    <!-- Total Employees -->
     <div class="col">
       <a href="approve_employee.php" class="text-decoration-none">
         <div class="card text-center border-dark border-3">
@@ -62,8 +51,6 @@ include 'includes/header.php';
       </a>
     </div>
 
-
-    <!-- Employees Approved -->
     <div class="col">
       <a href="approve_employee.php" class="text-decoration-none">
         <div class="card text-center border-dark border-3 shadow-sm">

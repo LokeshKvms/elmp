@@ -42,7 +42,7 @@ if (isset($_POST['login'])) {
       $_SESSION['error'] = 'User not found.';
       header("Location: index.php");
       exit;
-    } else if ($password === $user['password']) {
+    } else if (password_verify($password,$user['password'])) {
       if ($role === 'admin' && $email === 'admin@gmail.com') {
         $_SESSION['user_id'] = $user['employee_id'];
         $_SESSION['name'] = $user['name'];

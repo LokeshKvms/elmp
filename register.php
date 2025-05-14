@@ -163,7 +163,8 @@ if (isset($_SESSION['role'])) {
         $position = $_POST['position'];
         $hire_date = $_POST['hire_date'];
         $department_id = $_POST['department_id'];
-        $password = $_POST['password'];
+        // $password = $_POST['password'];
+        $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
 
         $stmt = $conn->prepare("INSERT INTO Employees (name, email, department_id, position, hire_date, status, password) VALUES (?, ?, ?, ?, ?, 'inactive', ?)");
         $stmt->bind_param("ssisss", $name, $email, $department_id, $position, $hire_date, $password);

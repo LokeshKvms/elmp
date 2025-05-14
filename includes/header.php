@@ -26,9 +26,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'update_passwo
     echo json_encode(['success' => false, 'message' => 'Password must be at least 3 characters.']);
     exit;
   }
-
+  $hashPass = password_hash($newPassword,PASSWORD_DEFAULT);
   $stmt = $conn->prepare("UPDATE employees SET password = ? WHERE employee_id = ?");
-  $stmt->bind_param("si", $newPassword, $employee_id);
+  $stmt->bind_param("si", $hashPass, $employee_id);
 
   if ($stmt->execute()) {
     echo json_encode(['success' => true, 'message' => 'Password updated successfully.']);
@@ -226,10 +226,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'update_passwo
               <label class="form-label">Email</label>
               <input type="email" name="email" value="<?= htmlspecialchars($email) ?>" class="form-control" readonly>
             </div>
-            <div class="mb-3 col-6">
+            <!-- <div class="mb-3 col-6">
               <label class="form-label">Password</label>
               <input type="text" name="password" value="<?= htmlspecialchars($password) ?>" class="form-control" readonly>
-            </div>
+            </div> -->
             <div class="mb-3 col-6 d-none" id="newPasswordGroup">
               <label class="form-label">New Password</label>
               <input type="password" name="new_password" class="form-control">

@@ -8,9 +8,8 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     exit;
 }
 
-// Handle Add/Edit
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $id = $_POST['employee_id'] ?? '';  // Get employee ID from the form
+    $id = $_POST['employee_id'] ?? '';
     $name = $_POST['name'];
     $email = $_POST['email'];
     $dept = $_POST['department_id'];
@@ -18,7 +17,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $date = $_POST['hire_date'];
 
     if ($id) {
-        // Update existing employee
         echo "console.log('Editing employee with ID:'', $(this).data('id'));";
         $stmt = $conn->prepare("UPDATE Employees SET name=?, email=?, department_id=?, position=?, hire_date=? WHERE employee_id=?");
         $stmt->bind_param("ssissi", $name, $email, $dept, $pos, $date, $id);
@@ -26,7 +24,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute();
         $stmt->close();
     } else {
-        // Add new employee
         $checkStmt = $conn->prepare("SELECT employee_id FROM Employees WHERE email = ?");
         $checkStmt->bind_param("s", $email);
         $checkStmt->execute();
@@ -40,9 +37,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         $checkStmt->close();
 
-
-        $stmt = $conn->prepare("INSERT INTO Employees (name, email, department_id, position, hire_date, password, status) VALUES (?, ?, ?, ?, ?, 'elms@123', 'active')");
-        $stmt->bind_param("ssiss", $name, $email, $dept, $pos, $date);
+        $password = password_hash('elms@123',PASSWORD_DEFAULT);
+        $stmt = $conn->prepare("INSERT INTO Employees (name, email, department_id, position, hire_date, password, status) VALUES (?, ?, ?, ?, ?, ?, 'active')");
+        $stmt->bind_param("ssisss", $name, $email, $dept, $pos, $date,$password);
         $stmt->execute();
         $newEmpId = $stmt->insert_id;
         $stmt->close();
@@ -66,7 +63,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <p>You have been approved as an employee at our company for the position of {$pos}.</p>
         <p>Your <strong>Email is</strong> {$email} and it's password is elms@123<br>
         <p>Please log in to the portal using your registered email and password. An OTP will be sent to your email for login verification.</p>
-        <p>Reset your password by clicking forgot password.</p>
         <br>
         <p>Regards,<br>Admin</p>";
 
@@ -79,7 +75,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-// Handle Delete
 if (isset($_GET['delete'])) {
     $id = $_GET['delete'];
     $conn->query("DELETE FROM leave_requests WHERE employee_id = $id");
@@ -91,7 +86,6 @@ if (isset($_GET['delete'])) {
     exit;
 }
 
-// Handle Approve
 if (isset($_GET['approve'])) {
     $emp_id = $_GET['approve'];
 
@@ -128,7 +122,6 @@ if (isset($_GET['approve'])) {
     exit;
 }
 
-// Handle Reject
 if (isset($_GET['reject'])) {
     $emp_id = $_GET['reject'];
     $emp = $conn->query("SELECT * FROM Employees WHERE employee_id = $emp_id")->fetch_assoc();
@@ -151,29 +144,21 @@ require 'includes/header.php';
 <head>
     <meta charset="UTF-8">
     <title>Admin Dashboard - Approve Users</title>
-    <!-- Bootstrap 5 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 
-    <!-- DataTables Core CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
 
-    <!-- DataTables Buttons Extension CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
 
-    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- DataTables Core JS -->
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 
-    <!-- DataTables Buttons Extension JS -->
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
 
-    <!-- JSZip (required for Excel export) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
     <style>
@@ -367,16 +352,14 @@ require 'includes/header.php';
 
             $('#cancelBtn').click(function(e) {
                 e.preventDefault();
-                $('#employeeModal').modal('hide'); // Just close the modal, don't submit the form
+                $('#employeeModal').modal('hide');
             });
 
-            // Show Toast after adding/editing employee
             const toastMessage = '<?= $_SESSION['toast']['msg'] ?? '' ?>';
             const toastClass = '<?= $_SESSION['toast']['class'] ?? '' ?>';
 
-            let confirmActionUrl = '#'; // temp storage
+            let confirmActionUrl = '#';
 
-            // Show custom confirm toast
             function showConfirmToast(message, actionUrl) {
                 $('#confirmToastMsg').text(message);
                 $('#confirmToastYesBtn').attr('href', actionUrl);
