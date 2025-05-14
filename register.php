@@ -92,6 +92,7 @@ if (isset($_SESSION['role'])) {
       });
     });
   </script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 
 <body style="background-color: #F5F7FA;">
@@ -163,19 +164,31 @@ if (isset($_SESSION['role'])) {
         $position = $_POST['position'];
         $hire_date = $_POST['hire_date'];
         $department_id = $_POST['department_id'];
-        // $password = $_POST['password'];
         $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
 
-        $stmt = $conn->prepare("INSERT INTO Employees (name, email, department_id, position, hire_date, status, password) VALUES (?, ?, ?, ?, ?, 'inactive', ?)");
-        $stmt->bind_param("ssisss", $name, $email, $department_id, $position, $hire_date, $password);
+        $checkStmt = $conn->prepare("SELECT employee_id FROM Employees WHERE email = ?");
+        $checkStmt->bind_param("s", $email);
+        $checkStmt->execute();
+        $checkStmt->store_result();
+        if ($checkStmt->num_rows > 0) {
+          echo "<script>showToast('Email already exists', 'danger');</script>";
+          $checkStmt->close();
+        }
+        else{
 
-        if ($stmt->execute()) {
-          echo "<script>
+          $checkStmt->close();
+          
+          $stmt = $conn->prepare("INSERT INTO Employees (name, email, department_id, position, hire_date, status, password) VALUES (?, ?, ?, ?, ?, 'inactive', ?)");
+          $stmt->bind_param("ssisss", $name, $email, $department_id, $position, $hire_date, $password);
+          
+          if ($stmt->execute()) {
+            echo "<script>
             showToast('Registration successful. Awaiting manager approval.', 'success');
             setTimeout(() => { window.location.href = 'index.php'; }, 2000);
-          </script>";
-        } else {
-          echo "<script>showToast('Error: " . $stmt->error . "', 'danger');</script>";
+            </script>";
+          } else {
+            echo "<script>showToast('Error: " . $stmt->error . "', 'danger');</script>";
+          }
         }
       }
       ?>

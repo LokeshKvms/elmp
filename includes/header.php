@@ -171,6 +171,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'update_passwo
     <a href="approve_leave.php" class="sidebar-link">
       <i class="fas fa-check-circle me-2"></i>Manage Leaves
     </a>
+    <a href="holidays.php" class="sidebar-link">
+      <i class="fas fa-calendar-alt me-2"></i>Manage Holidays
+    </a>
 
   <?php else: ?>
     <!-- Employee Dashboard -->
@@ -186,11 +189,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'update_passwo
     <a href="drafts.php" class="sidebar-link">
       <i class="fas fa-file-alt me-2"></i>Drafts
     </a>
+    <a href="holidays.php" class="sidebar-link">
+      <i class="fas fa-calendar-alt me-2"></i>Holidays
+    </a>
 
   <?php endif; ?>
-  <a href="holidays.php" class="sidebar-link">
-    <i class="fas fa-calendar-alt me-2"></i>Manage Holidays
-  </a>
 </div>
 <!-- Feedback Modal -->
 <div class="modal fade" id="feedbackModal" tabindex="-1" aria-hidden="true" style="z-index:2001;height:200px;">

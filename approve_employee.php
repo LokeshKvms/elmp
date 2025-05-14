@@ -32,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($checkStmt->num_rows > 0) {
             $_SESSION['toast'] = ['msg' => 'Email already exists. Please use a different one.', 'class' => 'bg-danger'];
             $checkStmt->close();
+            header("Location: approve_employee.php");
             exit;
         }
         $checkStmt->close();
