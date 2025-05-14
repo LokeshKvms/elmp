@@ -18,8 +18,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($id) {
         echo "console.log('Editing employee with ID:'', $(this).data('id'));";
-        $stmt = $conn->prepare("UPDATE Employees SET name=?, email=?, department_id=?, position=?, hire_date=? WHERE employee_id=?");
-        $stmt->bind_param("ssissi", $name, $email, $dept, $pos, $date, $id);
+        $stmt = $conn->prepare("UPDATE Employees SET name=?, department_id=?, position=?, hire_date=? WHERE employee_id=?");
+        $stmt->bind_param("sissi", $name, $dept, $pos, $date, $id);
         $_SESSION['toast'] = ['msg' => 'Employee updated successfully.', 'class' => 'bg-info'];
         $stmt->execute();
         $stmt->close();
@@ -310,7 +310,7 @@ require 'includes/header.php';
     </main>
 
     <!-- Toast Notification -->
-    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 9999">
         <div id="toastMsg" class="toast align-items-center text-white bg-success border-0" role="alert">
             <div class="d-flex">
                 <div class="toast-body" id="toastBody">Action successful.</div>

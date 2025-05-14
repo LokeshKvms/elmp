@@ -54,6 +54,20 @@ if (isset($_SESSION['role'])) {
       color: #6c757d;
     }
   </style>
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+  <script>
+    function enableRegister() {
+      $("#registerBtn").removeAttr("disabled");
+
+      const recaptchaResponse = grecaptcha.getResponse();
+      if (recaptchaResponse.length === 0) {
+        console.log('Captcha not completed!');
+        $("#registerBtn").attr("disabled", "disabled");
+      } else {
+        console.log('Captcha verified');
+      }
+    }
+  </script>
 
   <script>
     function clearForm() {
@@ -145,6 +159,10 @@ if (isset($_SESSION['role'])) {
             <input type="password" id="confirm_password" class="form-control" required>
             <div class="form-text text-danger d-none" id="passwordMismatch">Passwords do not match</div>
           </div>
+          <div class="mb-3 text-center d-flex justify-content-center">
+            <div class="g-recaptcha" data-sitekey="6LeM1DYrAAAAADr-eWGoIv3aQBXt13clCX_mnD_H" data-callback="enableRegister"></div>
+          </div>
+
         </div>
 
         <div class="d-flex justify-content-between">
@@ -165,7 +183,17 @@ if (isset($_SESSION['role'])) {
         $hire_date = $_POST['hire_date'];
         $department_id = $_POST['department_id'];
         $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+        $recaptchaSecret = '6LeM1DYrAAAAAHRYy5S_x8rjEwy6RneNfYr3DHsM';
+        $recaptchaResponse = $_POST['g-recaptcha-response'];
 
+        $verifyUrl = "https://www.google.com/recaptcha/api/siteverify?secret=$recaptchaSecret&response=$recaptchaResponse";
+        $verifyResponse = file_get_contents($verifyUrl);
+        $responseData = json_decode($verifyResponse);
+
+        if (!$responseData->success) {
+          echo "<script>showToast('Please complete the CAPTCHA.', 'danger');</script>";
+          exit;
+        }
         $checkStmt = $conn->prepare("SELECT employee_id FROM Employees WHERE email = ?");
         $checkStmt->bind_param("s", $email);
         $checkStmt->execute();
@@ -173,14 +201,13 @@ if (isset($_SESSION['role'])) {
         if ($checkStmt->num_rows > 0) {
           echo "<script>showToast('Email already exists', 'danger');</script>";
           $checkStmt->close();
-        }
-        else{
+        } else {
 
           $checkStmt->close();
-          
+
           $stmt = $conn->prepare("INSERT INTO Employees (name, email, department_id, position, hire_date, status, password) VALUES (?, ?, ?, ?, ?, 'inactive', ?)");
           $stmt->bind_param("ssisss", $name, $email, $department_id, $position, $hire_date, $password);
-          
+
           if ($stmt->execute()) {
             echo "<script>
             showToast('Registration successful. Awaiting manager approval.', 'success');
